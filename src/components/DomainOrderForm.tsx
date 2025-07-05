@@ -138,7 +138,7 @@ const DomainOrderForm: React.FC<DomainOrderFormProps> = ({ selectedDomain, onBac
           
           <div className="mb-6">
             <a
-              href="https://discord.gg/your-server-invite"
+              href="https://discord.gg/Qy6tuNJmwJ"
               target="_blank"
               rel="noopener noreferrer"
               className={`w-full ${themeStyles.button} text-white py-3 px-4 rounded-lg font-semibold transition-all duration-300 flex items-center justify-center mb-4`}
@@ -156,7 +156,7 @@ const DomainOrderForm: React.FC<DomainOrderFormProps> = ({ selectedDomain, onBac
             onClick={onBack}
             className={`w-full ${themeStyles.button} text-white py-3 rounded-lg font-semibold transition-all duration-300`}
           >
-            Back to Home
+            Back to Domains
           </button>
         </div>
       </div>

@@ -22,13 +22,17 @@ import {
   Award,
   TrendingUp,
   Heart,
-  Sparkles
+  Sparkles,
+  MessageCircle,
+  ExternalLink
 } from 'lucide-react';
 import PaymentForm from './components/PaymentForm';
 import DomainOrderForm from './components/DomainOrderForm';
 import DomainTLDList from './components/DomainTLDList';
 import MinecraftHero from './components/MinecraftHero';
 import PlanTabs from './components/PlanTabs';
+import DomainPage from './components/DomainPage';
+import HostingPage from './components/HostingPage';
 
 function App() {
   const [currentView, setCurrentView] = useState('home');
@@ -155,7 +159,7 @@ function App() {
     return <PaymentForm 
       selectedPlan={selectedPlan} 
       selectedAddons={selectedAddons}
-      onBack={() => setCurrentView('home')} 
+      onBack={() => setCurrentView('hosting')} 
       theme={theme}
     />;
   }
@@ -163,8 +167,24 @@ function App() {
   if (currentView === 'domain-checkout') {
     return <DomainOrderForm 
       selectedDomain={selectedDomain} 
-      onBack={() => setCurrentView('home')} 
+      onBack={() => setCurrentView('domains')} 
       theme={theme}
+    />;
+  }
+
+  if (currentView === 'domains') {
+    return <DomainPage 
+      theme={theme}
+      onBack={() => setCurrentView('home')}
+      onDomainSelect={handleDomainSelect}
+    />;
+  }
+
+  if (currentView === 'hosting') {
+    return <HostingPage 
+      theme={theme}
+      onBack={() => setCurrentView('home')}
+      onPlanSelect={handlePlanSelect}
     />;
   }
 
@@ -174,9 +194,13 @@ function App() {
       <header className={`${isScrolled ? themeStyles.card : 'bg-transparent'} border-b border-white/10 sticky top-0 z-50 transition-all duration-300`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center shadow-lg">
-                <Server className="w-6 h-6 text-white" />
+            <div className="flex items-center space-x-3 cursor-pointer" onClick={() => setCurrentView('home')}>
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg overflow-hidden">
+                <img 
+                  src="/05b5bc0e84997d92e62826cfce30b63a.webp" 
+                  alt="Demon Node Logo" 
+                  className="w-full h-full object-cover"
+                />
               </div>
               <div>
                 <h1 className={`text-2xl font-bold ${themeStyles.text}`}>Demon Node™</h1>
@@ -184,10 +208,34 @@ function App() {
               </div>
             </div>
             <nav className="hidden md:flex items-center space-x-8">
-              <a href="#home" className={`${themeStyles.textSecondary} hover:text-purple-400 transition-colors font-medium`}>Home</a>
-              <a href="#domains" className={`${themeStyles.textSecondary} hover:text-purple-400 transition-colors font-medium`}>Domains</a>
-              <a href="#hosting" className={`${themeStyles.textSecondary} hover:text-purple-400 transition-colors font-medium`}>Hosting</a>
-              <a href="#compare" className={`${themeStyles.textSecondary} hover:text-purple-400 transition-colors font-medium`}>Compare</a>
+              <button 
+                onClick={() => setCurrentView('home')}
+                className={`${currentView === 'home' ? 'text-purple-400' : themeStyles.textSecondary} hover:text-purple-400 transition-colors font-medium`}
+              >
+                Home
+              </button>
+              <button 
+                onClick={() => setCurrentView('domains')}
+                className={`${currentView === 'domains' ? 'text-purple-400' : themeStyles.textSecondary} hover:text-purple-400 transition-colors font-medium`}
+              >
+                Domains
+              </button>
+              <button 
+                onClick={() => setCurrentView('hosting')}
+                className={`${currentView === 'hosting' ? 'text-purple-400' : themeStyles.textSecondary} hover:text-purple-400 transition-colors font-medium`}
+              >
+                Hosting
+              </button>
+              <a 
+                href="https://discord.gg/Qy6tuNJmwJ" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className={`${themeStyles.textSecondary} hover:text-purple-400 transition-colors font-medium flex items-center`}
+              >
+                <MessageCircle className="w-4 h-4 mr-1" />
+                Discord
+                <ExternalLink className="w-3 h-3 ml-1" />
+              </a>
               <ThemeToggle />
             </nav>
           </div>
@@ -221,13 +269,16 @@ function App() {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
-            <button className={`${themeStyles.pinkButton} ${themeStyles.pinkGlow} text-white px-10 py-5 rounded-2xl font-bold text-lg transition-all duration-300 transform hover:scale-105 flex items-center group`}>
+            <button 
+              onClick={() => setCurrentView('domains')}
+              className={`${themeStyles.pinkButton} ${themeStyles.pinkGlow} text-white px-10 py-5 rounded-2xl font-bold text-lg transition-all duration-300 transform hover:scale-105 flex items-center group`}
+            >
               <Globe className="w-6 h-6 mr-3 group-hover:rotate-12 transition-transform" />
               Register Domain
               <ArrowRight className="w-5 h-5 ml-3 group-hover:translate-x-1 transition-transform" />
             </button>
             <button 
-              onClick={() => document.getElementById('hosting')?.scrollIntoView({ behavior: 'smooth' })}
+              onClick={() => setCurrentView('hosting')}
               className={`${themeStyles.button} ${themeStyles.glowButton} text-white px-10 py-5 rounded-2xl font-bold text-lg transition-all duration-300 transform hover:scale-105 flex items-center group`}
             >
               <Gamepad2 className="w-6 h-6 mr-3 group-hover:rotate-12 transition-transform" />
@@ -268,7 +319,7 @@ function App() {
                   </li>
                 </ul>
                 <button 
-                  onClick={() => document.getElementById('domains')?.scrollIntoView({ behavior: 'smooth' })}
+                  onClick={() => setCurrentView('domains')}
                   className={`${themeStyles.pinkButton} ${themeStyles.pinkGlow} text-white px-8 py-4 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 flex items-center group`}
                 >
                   Get Started
@@ -303,7 +354,7 @@ function App() {
                   </li>
                 </ul>
                 <button 
-                  onClick={() => document.getElementById('hosting')?.scrollIntoView({ behavior: 'smooth' })}
+                  onClick={() => setCurrentView('hosting')}
                   className={`${themeStyles.button} ${themeStyles.glowButton} text-white px-8 py-4 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 flex items-center group`}
                 >
                   Choose Plan
@@ -433,7 +484,7 @@ function App() {
             </p>
             <div className="flex flex-col sm:flex-row gap-6 justify-center">
               <button 
-                onClick={() => document.getElementById('domains')?.scrollIntoView({ behavior: 'smooth' })}
+                onClick={() => setCurrentView('domains')}
                 className={`${themeStyles.pinkButton} ${themeStyles.pinkGlow} text-white px-10 py-5 rounded-2xl font-bold text-lg transition-all duration-300 transform hover:scale-105 flex items-center justify-center group`}
               >
                 <Globe className="w-6 h-6 mr-3 group-hover:rotate-12 transition-transform" />
@@ -441,7 +492,7 @@ function App() {
                 <ArrowRight className="w-5 h-5 ml-3 group-hover:translate-x-1 transition-transform" />
               </button>
               <button 
-                onClick={() => document.getElementById('hosting')?.scrollIntoView({ behavior: 'smooth' })}
+                onClick={() => setCurrentView('hosting')}
                 className={`${themeStyles.button} ${themeStyles.glowButton} text-white px-10 py-5 rounded-2xl font-bold text-lg transition-all duration-300 transform hover:scale-105 flex items-center justify-center group`}
               >
                 <Gamepad2 className="w-6 h-6 mr-3 group-hover:rotate-12 transition-transform" />
@@ -453,30 +504,18 @@ function App() {
         </div>
       </section>
 
-      {/* Domain Extensions List */}
-      <section id="domains">
-        <DomainTLDList theme={theme} />
-      </section>
-
-      {/* Minecraft Hero */}
-      <MinecraftHero 
-        theme={theme} 
-        onScrollToPlans={() => document.getElementById('hosting')?.scrollIntoView({ behavior: 'smooth' })} 
-      />
-
-      {/* Minecraft Hosting Plans */}
-      <section id="hosting">
-        <PlanTabs theme={theme} onPlanSelect={handlePlanSelect} />
-      </section>
-
       {/* Footer */}
       <footer className={`${themeStyles.card} border-t border-white/10 py-12 px-4 sm:px-6 lg:px-8`}>
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
               <div className="flex items-center space-x-3 mb-4">
-                <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center shadow-lg">
-                  <Server className="w-5 h-5 text-white" />
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center shadow-lg overflow-hidden">
+                  <img 
+                    src="/05b5bc0e84997d92e62826cfce30b63a.webp" 
+                    alt="Demon Node Logo" 
+                    className="w-full h-full object-cover"
+                  />
                 </div>
                 <span className={`text-xl font-bold ${themeStyles.text}`}>Demon Node™</span>
               </div>
@@ -505,7 +544,18 @@ function App() {
             <div>
               <h4 className={`font-semibold ${themeStyles.text} mb-4`}>Connect</h4>
               <ul className={`space-y-2 text-sm ${themeStyles.textSecondary}`}>
-                <li className="hover:text-purple-400 transition-colors cursor-pointer">Discord Server</li>
+                <li>
+                  <a 
+                    href="https://discord.gg/Qy6tuNJmwJ" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="hover:text-purple-400 transition-colors cursor-pointer flex items-center"
+                  >
+                    <MessageCircle className="w-4 h-4 mr-2" />
+                    Discord Server
+                    <ExternalLink className="w-3 h-3 ml-1" />
+                  </a>
+                </li>
                 <li className="hover:text-purple-400 transition-colors cursor-pointer">Support Tickets</li>
                 <li className="hover:text-purple-400 transition-colors cursor-pointer">Status Page</li>
                 <li className="hover:text-purple-400 transition-colors cursor-pointer">Documentation</li>
