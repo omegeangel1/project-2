@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, User, Mail, Phone, MapPin, MessageCircle, Send, CheckCircle, Gamepad2, ExternalLink, Plus, Minus } from 'lucide-react';
+import { ArrowLeft, User, Mail, MessageCircle, Send, CheckCircle, Gamepad2, ExternalLink, Plus, Minus } from 'lucide-react';
 
 interface PaymentFormProps {
   selectedPlan: any;
@@ -13,10 +13,6 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ selectedPlan, selectedAddons,
     firstName: '',
     lastName: '',
     email: '',
-    phone: '',
-    address: '',
-    state: '',
-    country: '',
     discordUsername: '',
     serverName: ''
   });
@@ -92,12 +88,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ selectedPlan, selectedAddons,
           fields: [
             {
               name: "👤 Customer Information",
-              value: `**Name:** ${formData.firstName} ${formData.lastName}\n**Email:** ${formData.email}\n**Phone:** ${formData.phone}\n**Discord:** ${formData.discordUsername}`,
-              inline: false
-            },
-            {
-              name: "📍 Address",
-              value: `${formData.address}\n${formData.state}, ${formData.country}`,
+              value: `**Name:** ${formData.firstName} ${formData.lastName}\n**Email:** ${formData.email}\n**Discord:** ${formData.discordUsername}`,
               inline: false
             },
             {
@@ -384,22 +375,6 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ selectedPlan, selectedAddons,
 
               <div>
                 <label className={`block text-sm font-medium ${themeStyles.textSecondary} mb-2`}>
-                  <Phone className="w-4 h-4 inline mr-2" />
-                  Phone Number *
-                </label>
-                <input
-                  type="tel"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleInputChange}
-                  required
-                  className={`w-full px-4 py-3 ${themeStyles.input} border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500`}
-                  placeholder="Enter phone number"
-                />
-              </div>
-
-              <div>
-                <label className={`block text-sm font-medium ${themeStyles.textSecondary} mb-2`}>
                   <MessageCircle className="w-4 h-4 inline mr-2" />
                   Discord Username *
                 </label>
@@ -412,49 +387,6 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ selectedPlan, selectedAddons,
                   className={`w-full px-4 py-3 ${themeStyles.input} border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500`}
                   placeholder="Enter Discord username"
                 />
-              </div>
-
-              <div>
-                <label className={`block text-sm font-medium ${themeStyles.textSecondary} mb-2`}>
-                  <MapPin className="w-4 h-4 inline mr-2" />
-                  Street Address *
-                </label>
-                <input
-                  type="text"
-                  name="address"
-                  value={formData.address}
-                  onChange={handleInputChange}
-                  required
-                  className={`w-full px-4 py-3 ${themeStyles.input} border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500`}
-                  placeholder="Enter street address"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className={`block text-sm font-medium ${themeStyles.textSecondary} mb-2`}>State *</label>
-                  <input
-                    type="text"
-                    name="state"
-                    value={formData.state}
-                    onChange={handleInputChange}
-                    required
-                    className={`w-full px-4 py-3 ${themeStyles.input} border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500`}
-                    placeholder="Enter state"
-                  />
-                </div>
-                <div>
-                  <label className={`block text-sm font-medium ${themeStyles.textSecondary} mb-2`}>Country *</label>
-                  <input
-                    type="text"
-                    name="country"
-                    value={formData.country}
-                    onChange={handleInputChange}
-                    required
-                    className={`w-full px-4 py-3 ${themeStyles.input} border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500`}
-                    placeholder="Enter country"
-                  />
-                </div>
               </div>
 
               <div>
