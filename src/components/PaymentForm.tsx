@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, User, Mail, Phone, MapPin, MessageCircle, Send, CheckCircle, Gamepad2 } from 'lucide-react';
+import { ArrowLeft, User, Mail, Phone, MapPin, MessageCircle, Send, CheckCircle, Gamepad2, ExternalLink } from 'lucide-react';
 
 interface PaymentFormProps {
   selectedPlan: any;
@@ -81,7 +81,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ selectedPlan, selectedAddons,
           ],
           timestamp: new Date().toISOString(),
           footer: {
-            text: "CraftDomains Minecraft Hosting"
+            text: "Demon Node™ Minecraft Hosting"
           }
         }
       ]
@@ -124,8 +124,25 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ selectedPlan, selectedAddons,
           </div>
           <h2 className="text-2xl font-bold text-white mb-4">Order Submitted Successfully!</h2>
           <p className="text-gray-300 mb-6">
-            Your Minecraft hosting order has been received. Our team will contact you on Discord within 24 hours to set up your server.
+            Your Minecraft hosting order has been received. Our team will contact you on Discord to confirm your order and set up your server.
           </p>
+          
+          <div className="mb-6">
+            <a
+              href="https://discord.gg/your-server-invite"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white py-3 px-4 rounded-lg font-semibold transition-all duration-300 flex items-center justify-center mb-4"
+            >
+              <MessageCircle className="w-5 h-5 mr-2" />
+              Join Discord Server
+              <ExternalLink className="w-4 h-4 ml-2" />
+            </a>
+            <p className="text-sm text-gray-400">
+              Join our Discord server to confirm your order and get support from our team.
+            </p>
+          </div>
+
           <button
             onClick={onBack}
             className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white py-3 rounded-lg font-semibold transition-all duration-300"
