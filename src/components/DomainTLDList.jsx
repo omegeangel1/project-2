@@ -5,15 +5,15 @@ const DomainTLDList = ({ theme = 'dark' }) => {
   const [searchTerm, setSearchTerm] = useState('');
 
   const supportedTLDs = [
+    { name: ".fun", price: "₹149/year", discount: true },
+    { name: ".xyz", price: "₹199/year", discount: true },
     { name: ".com", price: "₹999/year", featured: true },
     { name: ".net", price: "₹899/year" },
-    { name: ".org", price: "₹799/year" },
-    { name: ".xyz", price: "₹199/year", discount: true },
     { name: ".tech", price: "₹349/year" },
     { name: ".online", price: "₹249/year", trending: true },
     { name: ".in", price: "₹699/year" },
-    { name: ".fun", price: "₹149/year", discount: true },
     { name: ".store", price: "₹499/year" },
+    { name: ".org", price: "₹799/year" },
     { name: ".website", price: "₹299/year", discount: true },
     { name: ".blog", price: "₹399/year" },
     { name: ".info", price: "₹599/year" },
@@ -30,27 +30,40 @@ const DomainTLDList = ({ theme = 'dark' }) => {
   const themeClasses = {
     dark: {
       bg: 'bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900',
-      cardBg: 'bg-white/5 backdrop-blur-md',
-      border: 'border-white/10',
+      cardBg: 'bg-red-900/10 backdrop-blur-xl border-red-500/20',
+      border: 'border-red-500/30',
       text: 'text-white',
       textSecondary: 'text-gray-300',
       textMuted: 'text-gray-400',
       searchBg: 'bg-white/10',
-      searchBorder: 'border-white/20'
+      searchBorder: 'border-white/20',
+      shadow: 'shadow-lg shadow-red-500/25 hover:shadow-red-500/40'
     },
     light: {
       bg: 'bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50',
-      cardBg: 'bg-white/80 backdrop-blur-md',
-      border: 'border-gray-200',
+      cardBg: 'bg-red-50/80 backdrop-blur-xl border-red-200',
+      border: 'border-red-300',
       text: 'text-gray-900',
       textSecondary: 'text-gray-700',
       textMuted: 'text-gray-600',
       searchBg: 'bg-white/90',
-      searchBorder: 'border-gray-300'
+      searchBorder: 'border-gray-300',
+      shadow: 'shadow-lg shadow-red-200/50 hover:shadow-red-300/60'
+    },
+    glass: {
+      bg: 'bg-gradient-to-br from-indigo-900/20 via-purple-900/20 to-pink-900/20 backdrop-blur-3xl',
+      cardBg: 'bg-red-500/5 backdrop-blur-xl border-red-500/20',
+      border: 'border-red-500/30',
+      text: 'text-white',
+      textSecondary: 'text-white/80',
+      textMuted: 'text-white/60',
+      searchBg: 'bg-white/5',
+      searchBorder: 'border-white/20',
+      shadow: 'shadow-lg shadow-red-500/25 hover:shadow-red-500/40'
     }
   };
 
-  const currentTheme = themeClasses[theme];
+  const currentTheme = themeClasses[theme] || themeClasses.dark;
 
   const filteredTLDs = useMemo(() => {
     return supportedTLDs.filter(tld =>
@@ -62,7 +75,7 @@ const DomainTLDList = ({ theme = 'dark' }) => {
     if (tld.featured) {
       return {
         icon: <Star className="w-3 h-3" />,
-        text: "Premium",
+        text: "Popular",
         bgClass: "bg-gradient-to-r from-yellow-500 to-orange-500",
         pulseClass: "animate-pulse"
       };
@@ -108,7 +121,7 @@ const DomainTLDList = ({ theme = 'dark' }) => {
         </div>
 
         {/* Search Bar */}
-        <div className={`max-w-2xl mx-auto mb-12 ${currentTheme.cardBg} ${currentTheme.border} border rounded-2xl p-6 shadow-xl`}>
+        <div className={`max-w-2xl mx-auto mb-12 ${currentTheme.cardBg} ${currentTheme.border} border rounded-2xl p-6 ${currentTheme.shadow} transition-all duration-300`}>
           <div className="relative">
             <Search className={`absolute left-4 top-1/2 transform -translate-y-1/2 ${currentTheme.textMuted} w-5 h-5`} />
             <input
@@ -116,7 +129,7 @@ const DomainTLDList = ({ theme = 'dark' }) => {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search domain extensions..."
-              className={`w-full pl-12 pr-4 py-4 ${currentTheme.searchBg} ${currentTheme.searchBorder} border rounded-xl ${currentTheme.text} placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-300`}
+              className={`w-full pl-12 pr-4 py-4 ${currentTheme.searchBg} ${currentTheme.searchBorder} border rounded-xl ${currentTheme.text} placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-300`}
             />
           </div>
           {searchTerm && (
@@ -134,13 +147,13 @@ const DomainTLDList = ({ theme = 'dark' }) => {
             return (
               <div
                 key={index}
-                className={`group relative ${currentTheme.cardBg} ${currentTheme.border} border rounded-xl p-6 text-center hover:scale-105 transition-all duration-500 shadow-xl hover:shadow-2xl cursor-pointer overflow-hidden`}
+                className={`group relative ${currentTheme.cardBg} ${currentTheme.border} border rounded-xl p-6 text-center hover:scale-105 transition-all duration-500 ${currentTheme.shadow} cursor-pointer overflow-hidden`}
                 style={{
                   animationDelay: `${index * 50}ms`
                 }}
               >
                 {/* Background Gradient on Hover */}
-                <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-pink-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div className="absolute inset-0 bg-gradient-to-br from-red-500/5 to-pink-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                 
                 {/* Tag */}
                 {tagInfo && (
@@ -151,7 +164,7 @@ const DomainTLDList = ({ theme = 'dark' }) => {
                 )}
 
                 {/* TLD Name */}
-                <div className={`relative text-2xl font-bold ${currentTheme.text} mb-3 group-hover:text-purple-400 transition-colors duration-300`}>
+                <div className={`relative text-2xl font-bold ${currentTheme.text} mb-3 group-hover:text-red-400 transition-colors duration-300`}>
                   {tld.name}
                 </div>
 
@@ -168,10 +181,10 @@ const DomainTLDList = ({ theme = 'dark' }) => {
                 </div>
 
                 {/* Hover Effect Border */}
-                <div className="absolute inset-0 rounded-xl border-2 border-transparent group-hover:border-purple-500/30 transition-all duration-500"></div>
+                <div className="absolute inset-0 rounded-xl border-2 border-transparent group-hover:border-red-500/30 transition-all duration-500"></div>
                 
                 {/* Glow Effect */}
-                <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 shadow-lg shadow-purple-500/20"></div>
+                <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 shadow-lg shadow-red-500/20"></div>
               </div>
             );
           })}
@@ -187,7 +200,7 @@ const DomainTLDList = ({ theme = 'dark' }) => {
             </p>
             <button
               onClick={() => setSearchTerm('')}
-              className="mt-4 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-6 py-2 rounded-lg font-semibold transition-all duration-300"
+              className="mt-4 bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white px-6 py-2 rounded-lg font-semibold transition-all duration-300"
             >
               Show All Extensions
             </button>
@@ -195,14 +208,14 @@ const DomainTLDList = ({ theme = 'dark' }) => {
         )}
 
         {/* Bottom CTA */}
-        <div className={`mt-16 text-center ${currentTheme.cardBg} ${currentTheme.border} border rounded-2xl p-8`}>
+        <div className={`mt-16 text-center ${currentTheme.cardBg} ${currentTheme.border} border rounded-2xl p-8 ${currentTheme.shadow}`}>
           <h3 className={`text-2xl font-bold ${currentTheme.text} mb-4`}>
             Can't find the perfect extension?
           </h3>
           <p className={`${currentTheme.textSecondary} mb-6`}>
             Contact our domain experts for personalized recommendations and bulk pricing options.
           </p>
-          <button className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-8 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-purple-500/25">
+          <button className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white px-8 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-red-500/25">
             Contact Domain Expert
           </button>
         </div>

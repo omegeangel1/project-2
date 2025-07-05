@@ -26,6 +26,9 @@ import {
 } from 'lucide-react';
 import PaymentForm from './components/PaymentForm';
 import DomainOrderForm from './components/DomainOrderForm';
+import DomainTLDList from './components/DomainTLDList';
+import MinecraftHero from './components/MinecraftHero';
+import PlanTabs from './components/PlanTabs';
 
 function App() {
   const [currentView, setCurrentView] = useState('home');
@@ -44,141 +47,6 @@ function App() {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
-  const minecraftPlans = {
-    budget: [
-      {
-        name: 'Budget Starter',
-        planType: 'Budget Plan',
-        price: '₹99',
-        ram: '1 GB',
-        cpu: '1 Core',
-        storage: '10 GB SSD',
-        location: 'Mumbai, India',
-        features: ['DDoS Protection', 'Free Subdomain', '24/7 Support', 'Automatic Backups'],
-        addons: {
-          unit: '₹30',
-          backup: '₹20'
-        }
-      },
-      {
-        name: 'Budget Pro',
-        planType: 'Budget Plan',
-        price: '₹199',
-        ram: '2 GB',
-        cpu: '2 Cores',
-        storage: '20 GB SSD',
-        location: 'Mumbai, India',
-        features: ['DDoS Protection', 'Free Subdomain', '24/7 Support', 'Automatic Backups', 'Plugin Support'],
-        addons: {
-          unit: '₹30',
-          backup: '₹20'
-        }
-      },
-      {
-        name: 'Budget Max',
-        planType: 'Budget Plan',
-        price: '₹299',
-        ram: '3 GB',
-        cpu: '3 Cores',
-        storage: '30 GB SSD',
-        location: 'Mumbai, India',
-        features: ['DDoS Protection', 'Free Subdomain', '24/7 Support', 'Automatic Backups', 'Plugin Support', 'Mod Support'],
-        addons: {
-          unit: '₹30',
-          backup: '₹20'
-        }
-      }
-    ],
-    powered: [
-      {
-        name: 'Powered Starter',
-        planType: 'Powered Plan',
-        price: '₹499',
-        ram: '4 GB',
-        cpu: '4 Cores',
-        storage: '40 GB NVMe',
-        location: 'Mumbai, India',
-        features: ['Advanced DDoS Protection', 'Free Custom Domain', 'Priority Support', 'Daily Backups', 'Full Plugin Support', 'Mod Support'],
-        addons: {
-          unit: '₹50',
-          backup: '₹30'
-        }
-      },
-      {
-        name: 'Powered Pro',
-        planType: 'Powered Plan',
-        price: '₹799',
-        ram: '6 GB',
-        cpu: '6 Cores',
-        storage: '60 GB NVMe',
-        location: 'Mumbai, India',
-        features: ['Advanced DDoS Protection', 'Free Custom Domain', 'Priority Support', 'Daily Backups', 'Full Plugin Support', 'Mod Support', 'Database Access'],
-        addons: {
-          unit: '₹50',
-          backup: '₹30'
-        }
-      },
-      {
-        name: 'Powered Max',
-        planType: 'Powered Plan',
-        price: '₹1199',
-        ram: '8 GB',
-        cpu: '8 Cores',
-        storage: '80 GB NVMe',
-        location: 'Mumbai, India',
-        features: ['Advanced DDoS Protection', 'Free Custom Domain', 'Priority Support', 'Daily Backups', 'Full Plugin Support', 'Mod Support', 'Database Access', 'FTP Access'],
-        addons: {
-          unit: '₹50',
-          backup: '₹30'
-        }
-      }
-    ],
-    premium: [
-      {
-        name: 'Premium Starter',
-        planType: 'Premium Plan',
-        price: '₹1999',
-        ram: '12 GB',
-        cpu: '12 Cores',
-        storage: '120 GB NVMe',
-        location: 'Mumbai, India',
-        features: ['Enterprise DDoS Protection', 'Free Custom Domain', 'VIP Support', 'Hourly Backups', 'Full Plugin Support', 'Mod Support', 'Database Access', 'FTP Access', 'Dedicated IP'],
-        addons: {
-          unit: '₹129',
-          backup: '₹50'
-        }
-      },
-      {
-        name: 'Premium Pro',
-        planType: 'Premium Plan',
-        price: '₹2999',
-        ram: '16 GB',
-        cpu: '16 Cores',
-        storage: '160 GB NVMe',
-        location: 'Mumbai, India',
-        features: ['Enterprise DDoS Protection', 'Free Custom Domain', 'VIP Support', 'Hourly Backups', 'Full Plugin Support', 'Mod Support', 'Database Access', 'FTP Access', 'Dedicated IP', 'Custom JAR'],
-        addons: {
-          unit: '₹129',
-          backup: '₹50'
-        }
-      },
-      {
-        name: 'Premium Max',
-        planType: 'Premium Plan',
-        price: '₹4999',
-        ram: '32 GB',
-        cpu: '32 Cores',
-        storage: '320 GB NVMe',
-        location: 'Mumbai, India',
-        features: ['Enterprise DDoS Protection', 'Free Custom Domain', 'VIP Support', 'Hourly Backups', 'Full Plugin Support', 'Mod Support', 'Database Access', 'FTP Access', 'Dedicated IP', 'Custom JAR', 'White-label'],
-        addons: {
-          unit: '₹129',
-          backup: '₹50'
-        }
-      }
-    ]
-  };
 
   const domainExtensions = [
     { tld: '.com', price: '₹999' },
@@ -213,13 +81,6 @@ function App() {
   const handleDomainSelect = (domain) => {
     setSelectedDomain(domain);
     setCurrentView('domain-checkout');
-  };
-
-  const handleAddonChange = (type, value) => {
-    setSelectedAddons(prev => ({
-      ...prev,
-      [type]: Math.max(0, value)
-    }));
   };
 
   const getThemeClasses = () => {
@@ -406,7 +267,10 @@ function App() {
                     <span>Domain Privacy Protection</span>
                   </li>
                 </ul>
-                <button className={`${themeStyles.pinkButton} ${themeStyles.pinkGlow} text-white px-8 py-4 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 flex items-center group`}>
+                <button 
+                  onClick={() => document.getElementById('domains')?.scrollIntoView({ behavior: 'smooth' })}
+                  className={`${themeStyles.pinkButton} ${themeStyles.pinkGlow} text-white px-8 py-4 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 flex items-center group`}
+                >
                   Get Started
                   <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
                 </button>
@@ -568,7 +432,10 @@ function App() {
               Join thousands of satisfied customers who trust Demon Node™ for their digital needs.
             </p>
             <div className="flex flex-col sm:flex-row gap-6 justify-center">
-              <button className={`${themeStyles.pinkButton} ${themeStyles.pinkGlow} text-white px-10 py-5 rounded-2xl font-bold text-lg transition-all duration-300 transform hover:scale-105 flex items-center justify-center group`}>
+              <button 
+                onClick={() => document.getElementById('domains')?.scrollIntoView({ behavior: 'smooth' })}
+                className={`${themeStyles.pinkButton} ${themeStyles.pinkGlow} text-white px-10 py-5 rounded-2xl font-bold text-lg transition-all duration-300 transform hover:scale-105 flex items-center justify-center group`}
+              >
                 <Globe className="w-6 h-6 mr-3 group-hover:rotate-12 transition-transform" />
                 Register Domain
                 <ArrowRight className="w-5 h-5 ml-3 group-hover:translate-x-1 transition-transform" />
@@ -586,252 +453,20 @@ function App() {
         </div>
       </section>
 
-      {/* Minecraft Hosting Plans */}
-      <section id="hosting" className="py-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className={`text-4xl md:text-5xl font-bold ${themeStyles.text} mb-4`}>Minecraft Hosting Plans</h2>
-            <p className={`text-xl ${themeStyles.textSecondary}`}>Choose the perfect plan for your Minecraft server</p>
-          </div>
-
-          {/* Budget Plans */}
-          <div className="mb-16">
-            <h3 className={`text-3xl font-bold ${themeStyles.text} mb-8 text-center`}>Budget Plans</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {minecraftPlans.budget.map((plan, index) => (
-                <div key={index} className={`${themeStyles.card} p-8 rounded-2xl group hover:scale-105 transition-all duration-300 border hover:border-green-500/30`}>
-                  <div className="text-center mb-6">
-                    <h4 className={`text-2xl font-bold ${themeStyles.text} mb-2`}>{plan.name}</h4>
-                    <div className={`text-3xl font-bold ${themeStyles.text} mb-1`}>{plan.price}</div>
-                    <div className={`${themeStyles.textSecondary} text-sm`}>per month</div>
-                  </div>
-                  
-                  <div className="space-y-3 mb-6">
-                    <div className={`flex items-center ${themeStyles.textSecondary}`}>
-                      <Cpu className="w-4 h-4 mr-3 text-purple-400" />
-                      <span>{plan.ram} RAM • {plan.cpu}</span>
-                    </div>
-                    <div className={`flex items-center ${themeStyles.textSecondary}`}>
-                      <HardDrive className="w-4 h-4 mr-3 text-purple-400" />
-                      <span>{plan.storage}</span>
-                    </div>
-                    <div className={`flex items-center ${themeStyles.textSecondary}`}>
-                      <MapPin className="w-4 h-4 mr-3 text-purple-400" />
-                      <span>{plan.location}</span>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2 mb-6">
-                    {plan.features.map((feature, idx) => (
-                      <div key={idx} className={`flex items-center ${themeStyles.textSecondary}`}>
-                        <CheckCircle className="w-4 h-4 mr-3 text-green-400" />
-                        <span className="text-sm">{feature}</span>
-                      </div>
-                    ))}
-                  </div>
-
-                  <button
-                    onClick={() => handlePlanSelect(plan)}
-                    className={`w-full ${themeStyles.button} ${themeStyles.glowButton} text-white py-3 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center group`}
-                  >
-                    Choose Plan
-                    <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Powered Plans */}
-          <div className="mb-16">
-            <h3 className={`text-3xl font-bold ${themeStyles.text} mb-8 text-center`}>Powered Plans</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {minecraftPlans.powered.map((plan, index) => (
-                <div key={index} className={`${themeStyles.card} p-8 rounded-2xl group hover:scale-105 transition-all duration-300 relative border hover:border-orange-500/30`}>
-                  {index === 1 && (
-                    <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                      <div className="bg-gradient-to-r from-yellow-400 to-orange-400 text-black px-4 py-1 rounded-full text-sm font-semibold shadow-lg">
-                        Most Popular
-                      </div>
-                    </div>
-                  )}
-                  
-                  <div className="text-center mb-6">
-                    <h4 className={`text-2xl font-bold ${themeStyles.text} mb-2`}>{plan.name}</h4>
-                    <div className={`text-3xl font-bold ${themeStyles.text} mb-1`}>{plan.price}</div>
-                    <div className={`${themeStyles.textSecondary} text-sm`}>per month</div>
-                  </div>
-                  
-                  <div className="space-y-3 mb-6">
-                    <div className={`flex items-center ${themeStyles.textSecondary}`}>
-                      <Cpu className="w-4 h-4 mr-3 text-purple-400" />
-                      <span>{plan.ram} RAM • {plan.cpu}</span>
-                    </div>
-                    <div className={`flex items-center ${themeStyles.textSecondary}`}>
-                      <HardDrive className="w-4 h-4 mr-3 text-purple-400" />
-                      <span>{plan.storage}</span>
-                    </div>
-                    <div className={`flex items-center ${themeStyles.textSecondary}`}>
-                      <MapPin className="w-4 h-4 mr-3 text-purple-400" />
-                      <span>{plan.location}</span>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2 mb-6">
-                    {plan.features.map((feature, idx) => (
-                      <div key={idx} className={`flex items-center ${themeStyles.textSecondary}`}>
-                        <CheckCircle className="w-4 h-4 mr-3 text-green-400" />
-                        <span className="text-sm">{feature}</span>
-                      </div>
-                    ))}
-                  </div>
-
-                  <button
-                    onClick={() => handlePlanSelect(plan)}
-                    className={`w-full ${themeStyles.button} ${themeStyles.glowButton} text-white py-3 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center group`}
-                  >
-                    Choose Plan
-                    <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Premium Plans */}
-          <div>
-            <h3 className={`text-3xl font-bold ${themeStyles.text} mb-8 text-center`}>Premium Plans</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {minecraftPlans.premium.map((plan, index) => (
-                <div key={index} className={`${themeStyles.card} p-8 rounded-2xl group hover:scale-105 transition-all duration-300 relative border hover:border-purple-500/30`}>
-                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                    <div className="bg-gradient-to-r from-purple-400 to-pink-400 text-white px-4 py-1 rounded-full text-sm font-semibold flex items-center shadow-lg">
-                      <Star className="w-3 h-3 mr-1" />
-                      Premium
-                    </div>
-                  </div>
-                  
-                  <div className="text-center mb-6">
-                    <h4 className={`text-2xl font-bold ${themeStyles.text} mb-2`}>{plan.name}</h4>
-                    <div className={`text-3xl font-bold ${themeStyles.text} mb-1`}>{plan.price}</div>
-                    <div className={`${themeStyles.textSecondary} text-sm`}>per month</div>
-                  </div>
-                  
-                  <div className="space-y-3 mb-6">
-                    <div className={`flex items-center ${themeStyles.textSecondary}`}>
-                      <Cpu className="w-4 h-4 mr-3 text-purple-400" />
-                      <span>{plan.ram} RAM • {plan.cpu}</span>
-                    </div>
-                    <div className={`flex items-center ${themeStyles.textSecondary}`}>
-                      <HardDrive className="w-4 h-4 mr-3 text-purple-400" />
-                      <span>{plan.storage}</span>
-                    </div>
-                    <div className={`flex items-center ${themeStyles.textSecondary}`}>
-                      <MapPin className="w-4 h-4 mr-3 text-purple-400" />
-                      <span>{plan.location}</span>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2 mb-6">
-                    {plan.features.map((feature, idx) => (
-                      <div key={idx} className={`flex items-center ${themeStyles.textSecondary}`}>
-                        <CheckCircle className="w-4 h-4 mr-3 text-green-400" />
-                        <span className="text-sm">{feature}</span>
-                      </div>
-                    ))}
-                  </div>
-
-                  <button
-                    onClick={() => handlePlanSelect(plan)}
-                    className={`w-full ${themeStyles.button} ${themeStyles.glowButton} text-white py-3 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center group`}
-                  >
-                    Choose Plan
-                    <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
+      {/* Domain Extensions List */}
+      <section id="domains">
+        <DomainTLDList theme={theme} />
       </section>
 
-      {/* Domain Registration */}
-      <section id="domains" className="py-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className={`text-4xl md:text-5xl font-bold ${themeStyles.text} mb-4`}>Domain Registration</h2>
-            <p className={`text-xl ${themeStyles.textSecondary}`}>Secure your perfect domain name today</p>
-          </div>
+      {/* Minecraft Hero */}
+      <MinecraftHero 
+        theme={theme} 
+        onScrollToPlans={() => document.getElementById('hosting')?.scrollIntoView({ behavior: 'smooth' })} 
+      />
 
-          <div className={`${themeStyles.card} p-8 rounded-2xl mb-8 border hover:border-pink-500/30 transition-all duration-300`}>
-            <div className="flex flex-col md:flex-row gap-4">
-              <div className="flex-1">
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Enter your domain name"
-                  className={`w-full px-6 py-4 ${themeStyles.card} border border-white/20 rounded-xl ${themeStyles.text} placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 text-lg`}
-                  onKeyPress={(e) => e.key === 'Enter' && handleDomainSearch()}
-                />
-              </div>
-              <button
-                onClick={handleDomainSearch}
-                className={`${themeStyles.pinkButton} ${themeStyles.pinkGlow} text-white px-8 py-4 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center group`}
-              >
-                <Search className="w-5 h-5 mr-2 group-hover:rotate-12 transition-transform" />
-                Search
-              </button>
-            </div>
-          </div>
-
-          {searchResults.length > 0 && (
-            <div className={`${themeStyles.card} rounded-2xl overflow-hidden border`}>
-              <div className="p-6">
-                <h3 className={`text-xl font-bold ${themeStyles.text} mb-4`}>Search Results</h3>
-                <div className="space-y-3">
-                  {searchResults.map((result, index) => (
-                    <div key={index} className={`flex items-center justify-between p-4 ${themeStyles.card} rounded-lg border hover:border-purple-500/30 transition-all duration-300`}>
-                      <div className="flex items-center space-x-3">
-                        <Globe className="w-5 h-5 text-purple-400" />
-                        <span className={`font-semibold ${themeStyles.text}`}>
-                          {result.domain}{result.tld}
-                        </span>
-                        <span className={`px-2 py-1 text-xs rounded-full ${
-                          result.available 
-                            ? 'bg-green-500/20 text-green-400' 
-                            : 'bg-red-500/20 text-red-400'
-                        }`}>
-                          {result.available ? 'Available' : 'Taken'}
-                        </span>
-                      </div>
-                      <div className="flex items-center space-x-4">
-                        <span className={`font-bold ${themeStyles.text}`}>{result.price}/year</span>
-                        {result.available && (
-                          <button
-                            onClick={() => handleDomainSelect(result)}
-                            className={`${themeStyles.pinkButton} ${themeStyles.pinkGlow} text-white px-4 py-2 rounded-lg font-semibold transition-all duration-300`}
-                          >
-                            Register
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
-            {domainExtensions.slice(0, 8).map((ext, index) => (
-              <div key={index} className={`${themeStyles.card} p-4 rounded-lg text-center border hover:border-purple-500/30 transition-all duration-300 group hover:scale-105`}>
-                <div className={`font-bold ${themeStyles.text} mb-1`}>{ext.tld}</div>
-                <div className={`text-sm ${themeStyles.textMuted}`}>{ext.price}/year</div>
-              </div>
-            ))}
-          </div>
-        </div>
+      {/* Minecraft Hosting Plans */}
+      <section id="hosting">
+        <PlanTabs theme={theme} onPlanSelect={handlePlanSelect} />
       </section>
 
       {/* Footer */}
