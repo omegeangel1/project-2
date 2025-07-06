@@ -1,30 +1,28 @@
 import React, { useState } from 'react';
-import { ArrowLeft, User, Mail, MessageCircle, Send, CheckCircle, Gamepad2, ExternalLink, Plus, Minus, Zap, Star, Shield, Copy } from 'lucide-react';
+import { ArrowLeft, User, Mail, MessageCircle, Send, CheckCircle, Server, ExternalLink, Cpu, HardDrive, Wifi, Database, Zap, Copy } from 'lucide-react';
 
-interface PaymentFormProps {
+interface VPSOrderFormProps {
   selectedPlan: any;
-  selectedAddons: any;
   onBack: () => void;
   theme: string;
 }
 
-const PaymentForm: React.FC<PaymentFormProps> = ({ selectedPlan, selectedAddons, onBack, theme }) => {
+const VPSOrderForm: React.FC<VPSOrderFormProps> = ({ selectedPlan, onBack, theme }) => {
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
     email: '',
     discordUsername: '',
-    serverName: ''
+    serverPurpose: ''
   });
 
-  const [localAddons, setLocalAddons] = useState(selectedAddons);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [orderId, setOrderId] = useState('');
   const [copied, setCopied] = useState(false);
 
   const generateOrderId = () => {
-    const prefix = 'MC';
+    const prefix = 'VPS';
     const timestamp = Date.now().toString().slice(-6);
     const random = Math.random().toString(36).substring(2, 6).toUpperCase();
     return `${prefix}${timestamp}${random}`;
@@ -42,20 +40,6 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ selectedPlan, selectedAddons,
       ...prev,
       [name]: value
     }));
-  };
-
-  const handleAddonChange = (type: string, value: number) => {
-    setLocalAddons((prev: any) => ({
-      ...prev,
-      [type]: Math.max(0, value)
-    }));
-  };
-
-  const calculateTotal = () => {
-    const basePrice = parseInt(selectedPlan.price.replace(/[₹,]/g, '').split('/')[0]);
-    const unitsPrice = (localAddons?.units || 0) * parseInt(selectedPlan.addons.unit.replace(/[₹,]/g, ''));
-    const backupsPrice = (localAddons?.backups || 0) * parseInt(selectedPlan.addons.backup.replace(/[₹,]/g, ''));
-    return basePrice + unitsPrice + backupsPrice;
   };
 
   const getThemeClasses = () => {
@@ -94,14 +78,12 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ selectedPlan, selectedAddons,
 
   const getPlanTypeIcon = (planType: string) => {
     switch (planType) {
-      case 'budget':
-        return <Shield className="w-5 h-5 text-green-400" />;
+      case 'cheap':
+        return <Server className="w-5 h-5 text-green-400" />;
       case 'powered':
         return <Zap className="w-5 h-5 text-orange-400" />;
-      case 'premium':
-        return <Star className="w-5 h-5 text-purple-400" />;
       default:
-        return <Gamepad2 className="w-5 h-5 text-blue-400" />;
+        return <Server className="w-5 h-5 text-blue-400" />;
     }
   };
 
@@ -111,7 +93,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ selectedPlan, selectedAddons,
     const orderDetails = {
       embeds: [
         {
-          title: "🎮 New Minecraft Hosting Order!",
+          title: "🖥️ New VPS Hosting Order!",
           color: 0x7C3AED,
           fields: [
             {
@@ -125,29 +107,24 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ selectedPlan, selectedAddons,
               inline: false
             },
             {
-              name: "🎯 Plan Details",
-              value: `**Plan:** ${selectedPlan.name} Plan\n**Type:** ${selectedPlan.planType || 'Standard'}\n**RAM:** ${selectedPlan.ram}\n**CPU:** ${selectedPlan.cpu}\n**Storage:** ${selectedPlan.storage}\n**Location:** ${selectedPlan.location}`,
-              inline: true
-            },
-            {
-              name: "🔧 Add-ons",
-              value: `**Extra Units:** ${localAddons?.units || 0}\n**Backup Slots:** ${localAddons?.backups || 0}`,
+              name: "🖥️ VPS Plan Details",
+              value: `**Plan:** ${selectedPlan.name}\n**Type:** ${selectedPlan.planType || 'Standard'}\n**RAM:** ${selectedPlan.ram}\n**CPU:** ${selectedPlan.cpu}\n**Storage:** ${selectedPlan.storage}\n**Bandwidth:** ${selectedPlan.bandwidth}${selectedPlan.processor ? `\n**Processor:** ${selectedPlan.processor}` : ''}${selectedPlan.network ? `\n**Network:** ${selectedPlan.network}` : ''}`,
               inline: true
             },
             {
               name: "💰 Pricing",
-              value: `**Base Price:** ₹${selectedPlan.price.replace(/[₹,]/g, '').split('/')[0]}/month\n**Add-ons:** ₹${((localAddons?.units || 0) * parseInt(selectedPlan.addons.unit.replace(/[₹,]/g, ''))) + ((localAddons?.backups || 0) * parseInt(selectedPlan.addons.backup.replace(/[₹,]/g, '')))}\n**Total:** ₹${calculateTotal()}/month`,
+              value: `**Price:** ${selectedPlan.price}${selectedPlan.priceUSD ? `\n**USD Price:** ${selectedPlan.priceUSD}` : ''}`,
               inline: true
             },
             {
-              name: "🎮 Server Details",
-              value: `**Server Name:** ${formData.serverName || 'Not specified'}`,
+              name: "🎯 Server Purpose",
+              value: `${formData.serverPurpose || 'Not specified'}`,
               inline: false
             }
           ],
           timestamp: new Date().toISOString(),
           footer: {
-            text: "Demon Node™ Minecraft Hosting"
+            text: "Demon Node™ VPS Hosting"
           }
         }
       ]
@@ -190,7 +167,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ selectedPlan, selectedAddons,
           <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
             <CheckCircle className="w-8 h-8 text-white" />
           </div>
-          <h2 className={`text-xl sm:text-2xl font-bold ${themeStyles.text} mb-4`}>Order Submitted Successfully!</h2>
+          <h2 className={`text-xl sm:text-2xl font-bold ${themeStyles.text} mb-4`}>VPS Order Submitted!</h2>
           
           {/* Order ID Display */}
           <div className={`${themeStyles.card} p-4 rounded-xl mb-6 border`}>
@@ -211,7 +188,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ selectedPlan, selectedAddons,
           </div>
 
           <p className={`${themeStyles.textSecondary} mb-6 text-sm sm:text-base`}>
-            Your Minecraft hosting order has been received. Create a ticket on Discord with this ID <strong>#{orderId}</strong> and our team will contact you to confirm your order and set up your server.
+            Your VPS hosting order has been received. Create a ticket on Discord with this ID <strong>#{orderId}</strong> and our team will contact you to confirm your order and set up your server.
           </p>
           
           <div className="mb-6">
@@ -234,7 +211,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ selectedPlan, selectedAddons,
             onClick={onBack}
             className={`w-full ${themeStyles.button} text-white py-3 rounded-lg font-semibold transition-all duration-300 text-sm sm:text-base`}
           >
-            Back to Plans
+            Back to VPS Plans
           </button>
         </div>
       </div>
@@ -250,14 +227,14 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ selectedPlan, selectedAddons,
             className={`flex items-center ${themeStyles.textSecondary} hover:text-purple-400 transition-colors text-sm sm:text-base`}
           >
             <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-            Back to Plans
+            Back to VPS Plans
           </button>
         </div>
 
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8">
           {/* Order Summary */}
           <div className={`${themeStyles.card} rounded-2xl p-4 sm:p-6 h-fit order-2 xl:order-1`}>
-            <h2 className={`text-xl sm:text-2xl font-bold ${themeStyles.text} mb-4 sm:mb-6`}>Order Summary</h2>
+            <h2 className={`text-xl sm:text-2xl font-bold ${themeStyles.text} mb-4 sm:mb-6`}>VPS Summary</h2>
             
             <div className="space-y-4 mb-4 sm:mb-6">
               <div className={`flex items-center space-x-3 sm:space-x-4 p-3 sm:p-4 ${themeStyles.card} rounded-xl`}>
@@ -265,14 +242,17 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ selectedPlan, selectedAddons,
                   {getPlanTypeIcon(selectedPlan.planType)}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className={`text-base sm:text-lg font-semibold ${themeStyles.text} truncate`}>{selectedPlan.name} Plan</h3>
-                  <p className={`${themeStyles.textSecondary} text-sm capitalize`}>{selectedPlan.planType || 'Standard'}</p>
+                  <h3 className={`text-base sm:text-lg font-semibold ${themeStyles.text} truncate`}>{selectedPlan.name}</h3>
+                  <p className={`${themeStyles.textSecondary} text-sm capitalize`}>{selectedPlan.planType || 'Standard'} VPS</p>
                 </div>
                 <div className="text-right flex-shrink-0">
                   <div className={`text-lg sm:text-xl font-bold ${themeStyles.text}`}>
-                    ₹{selectedPlan.price.replace(/[₹,]/g, '').split('/')[0]}
+                    {selectedPlan.price.replace(/\/mo.*/, '')}
                   </div>
                   <div className={`text-xs sm:text-sm ${themeStyles.textSecondary}`}>/month</div>
+                  {selectedPlan.priceUSD && (
+                    <div className={`text-xs ${themeStyles.textMuted}`}>{selectedPlan.priceUSD}</div>
+                  )}
                 </div>
               </div>
 
@@ -290,82 +270,19 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ selectedPlan, selectedAddons,
                   <span className="font-medium">{selectedPlan.storage}</span>
                 </div>
                 <div className={`flex justify-between ${themeStyles.textSecondary}`}>
-                  <span>Location:</span>
-                  <span className="font-medium">{selectedPlan.location}</span>
+                  <span>Bandwidth:</span>
+                  <span className="font-medium">{selectedPlan.bandwidth}</span>
                 </div>
-              </div>
-            </div>
-
-            {/* Add-ons Configuration */}
-            <div className={`border-t ${theme === 'light' ? 'border-gray-200' : 'border-white/20'} pt-4 sm:pt-6 mb-4 sm:mb-6`}>
-              <h4 className={`text-base sm:text-lg font-semibold ${themeStyles.text} mb-3 sm:mb-4`}>Configure Add-ons</h4>
-              
-              {/* Extra Units */}
-              <div className={`${themeStyles.card} p-3 sm:p-4 rounded-lg mb-3 sm:mb-4`}>
-                <div className="flex items-center justify-between mb-2 sm:mb-3">
-                  <div className="flex-1 min-w-0 mr-3">
-                    <h5 className={`font-semibold ${themeStyles.text} text-sm sm:text-base`}>Extra Units</h5>
-                    <p className={`text-xs sm:text-sm ${themeStyles.textSecondary}`}>1 GB RAM + 50% CPU + 5 GB SSD</p>
-                    <p className={`text-xs sm:text-sm font-semibold ${themeStyles.text}`}>
-                      ₹{selectedPlan.addons.unit.replace(/[₹,]/g, '')}/unit
-                    </p>
-                  </div>
-                  <div className="flex items-center space-x-2 sm:space-x-3 flex-shrink-0">
-                    <button
-                      onClick={() => handleAddonChange('units', (localAddons?.units || 0) - 1)}
-                      className={`w-7 h-7 sm:w-8 sm:h-8 ${themeStyles.button} text-white rounded-full flex items-center justify-center text-sm`}
-                    >
-                      <Minus className="w-3 h-3 sm:w-4 sm:h-4" />
-                    </button>
-                    <span className={`w-6 sm:w-8 text-center font-semibold ${themeStyles.text} text-sm sm:text-base`}>
-                      {localAddons?.units || 0}
-                    </span>
-                    <button
-                      onClick={() => handleAddonChange('units', (localAddons?.units || 0) + 1)}
-                      className={`w-7 h-7 sm:w-8 sm:h-8 ${themeStyles.button} text-white rounded-full flex items-center justify-center text-sm`}
-                    >
-                      <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
-                    </button>
-                  </div>
-                </div>
-                {(localAddons?.units || 0) > 0 && (
-                  <div className={`text-right text-xs sm:text-sm ${themeStyles.textSecondary}`}>
-                    Subtotal: ₹{(localAddons?.units || 0) * parseInt(selectedPlan.addons.unit.replace(/[₹,]/g, ''))}
+                {selectedPlan.processor && (
+                  <div className={`flex justify-between ${themeStyles.textSecondary} col-span-2`}>
+                    <span>Processor:</span>
+                    <span className="font-medium">{selectedPlan.processor}</span>
                   </div>
                 )}
-              </div>
-
-              {/* Backup Slots */}
-              <div className={`${themeStyles.card} p-3 sm:p-4 rounded-lg`}>
-                <div className="flex items-center justify-between mb-2 sm:mb-3">
-                  <div className="flex-1 min-w-0 mr-3">
-                    <h5 className={`font-semibold ${themeStyles.text} text-sm sm:text-base`}>Backup Slots</h5>
-                    <p className={`text-xs sm:text-sm ${themeStyles.textSecondary}`}>Additional backup storage</p>
-                    <p className={`text-xs sm:text-sm font-semibold ${themeStyles.text}`}>
-                      ₹{selectedPlan.addons.backup.replace(/[₹,]/g, '')}/slot
-                    </p>
-                  </div>
-                  <div className="flex items-center space-x-2 sm:space-x-3 flex-shrink-0">
-                    <button
-                      onClick={() => handleAddonChange('backups', (localAddons?.backups || 0) - 1)}
-                      className={`w-7 h-7 sm:w-8 sm:h-8 ${themeStyles.button} text-white rounded-full flex items-center justify-center text-sm`}
-                    >
-                      <Minus className="w-3 h-3 sm:w-4 sm:h-4" />
-                    </button>
-                    <span className={`w-6 sm:w-8 text-center font-semibold ${themeStyles.text} text-sm sm:text-base`}>
-                      {localAddons?.backups || 0}
-                    </span>
-                    <button
-                      onClick={() => handleAddonChange('backups', (localAddons?.backups || 0) + 1)}
-                      className={`w-7 h-7 sm:w-8 sm:h-8 ${themeStyles.button} text-white rounded-full flex items-center justify-center text-sm`}
-                    >
-                      <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
-                    </button>
-                  </div>
-                </div>
-                {(localAddons?.backups || 0) > 0 && (
-                  <div className={`text-right text-xs sm:text-sm ${themeStyles.textSecondary}`}>
-                    Subtotal: ₹{(localAddons?.backups || 0) * parseInt(selectedPlan.addons.backup.replace(/[₹,]/g, ''))}
+                {selectedPlan.network && (
+                  <div className={`flex justify-between ${themeStyles.textSecondary} col-span-2`}>
+                    <span>Network:</span>
+                    <span className="font-medium">{selectedPlan.network}</span>
                   </div>
                 )}
               </div>
@@ -374,8 +291,26 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ selectedPlan, selectedAddons,
             <div className={`border-t ${theme === 'light' ? 'border-gray-200' : 'border-white/20'} pt-4`}>
               <div className="flex justify-between items-center">
                 <span className={`text-lg sm:text-xl font-bold ${themeStyles.text}`}>Total</span>
-                <span className="text-xl sm:text-2xl font-bold text-purple-400">₹{calculateTotal()}/mo</span>
+                <div className="text-right">
+                  <span className="text-xl sm:text-2xl font-bold text-purple-400">
+                    {selectedPlan.price}
+                  </span>
+                  {selectedPlan.priceUSD && (
+                    <div className={`text-sm ${themeStyles.textMuted}`}>{selectedPlan.priceUSD}</div>
+                  )}
+                </div>
               </div>
+            </div>
+
+            <div className={`mt-4 sm:mt-6 p-3 sm:p-4 ${theme === 'light' ? 'bg-blue-50 border-blue-200' : 'bg-blue-500/20 border-blue-500/30'} rounded-xl border`}>
+              <h4 className={`${theme === 'light' ? 'text-blue-800' : 'text-blue-300'} font-semibold mb-2 text-sm sm:text-base`}>What's Included:</h4>
+              <ul className={`text-xs sm:text-sm ${theme === 'light' ? 'text-blue-700' : 'text-blue-200'} space-y-1`}>
+                <li>• Root Access & Full Control</li>
+                <li>• DDoS Protection</li>
+                <li>• 24/7 Support</li>
+                <li>• Instant Setup</li>
+                <li>• 99.9% Uptime SLA</li>
+              </ul>
             </div>
           </div>
 
@@ -451,16 +386,16 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ selectedPlan, selectedAddons,
 
               <div>
                 <label className={`block text-xs sm:text-sm font-medium ${themeStyles.textSecondary} mb-2`}>
-                  <Gamepad2 className="w-3 h-3 sm:w-4 sm:h-4 inline mr-2" />
-                  Server Name (Optional)
+                  <Server className="w-3 h-3 sm:w-4 sm:h-4 inline mr-2" />
+                  Server Purpose (Optional)
                 </label>
-                <input
-                  type="text"
-                  name="serverName"
-                  value={formData.serverName}
+                <textarea
+                  name="serverPurpose"
+                  value={formData.serverPurpose}
                   onChange={handleInputChange}
-                  className={`w-full px-3 sm:px-4 py-2 sm:py-3 ${themeStyles.input} border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm sm:text-base`}
-                  placeholder="Enter desired server name"
+                  rows={3}
+                  className={`w-full px-3 sm:px-4 py-2 sm:py-3 ${themeStyles.input} border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm sm:text-base resize-none`}
+                  placeholder="What will you use this VPS for? (e.g., web hosting, development, applications)"
                 />
               </div>
 
@@ -477,7 +412,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ selectedPlan, selectedAddons,
                 ) : (
                   <div className="flex items-center">
                     <Send className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                    Submit Order
+                    Submit VPS Order
                   </div>
                 )}
               </button>
@@ -489,4 +424,4 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ selectedPlan, selectedAddons,
   );
 };
 
-export default PaymentForm;
+export default VPSOrderForm;
