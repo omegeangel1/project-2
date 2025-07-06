@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Gamepad2, Zap, Star } from 'lucide-react';
+import { Gamepad2, Zap, Star, Shield, Crown, Gem } from 'lucide-react';
 import PlanCard from './PlanCard';
 
 interface PlanTabsProps {
@@ -57,7 +57,8 @@ const PlanTabs: React.FC<PlanTabsProps> = ({ theme = 'dark', onPlanSelect }) => 
         storage: '5GB SSD',
         location: 'India',
         features: ['Free DDoS Protection'],
-        addons: { unit: '₹30', backup: '₹25' }
+        addons: { unit: '₹30', backup: '₹25' },
+        planType: 'budget'
       },
       {
         name: 'Wood Plan',
@@ -67,7 +68,8 @@ const PlanTabs: React.FC<PlanTabsProps> = ({ theme = 'dark', onPlanSelect }) => 
         storage: '10GB SSD',
         location: 'Mumbai',
         features: ['Free DDoS Protection'],
-        addons: { unit: '₹30', backup: '₹25' }
+        addons: { unit: '₹30', backup: '₹25' },
+        planType: 'budget'
       },
       {
         name: 'Stone Plan',
@@ -77,7 +79,8 @@ const PlanTabs: React.FC<PlanTabsProps> = ({ theme = 'dark', onPlanSelect }) => 
         storage: '15GB SSD',
         location: 'Mumbai',
         features: ['Free DDoS Protection'],
-        addons: { unit: '₹30', backup: '₹25' }
+        addons: { unit: '₹30', backup: '₹25' },
+        planType: 'budget'
       },
       {
         name: 'Iron Plan',
@@ -87,7 +90,8 @@ const PlanTabs: React.FC<PlanTabsProps> = ({ theme = 'dark', onPlanSelect }) => 
         storage: '20GB SSD',
         location: 'Mumbai',
         features: ['Free DDoS Protection'],
-        addons: { unit: '₹30', backup: '₹25' }
+        addons: { unit: '₹30', backup: '₹25' },
+        planType: 'budget'
       },
       {
         name: 'Gold Plan',
@@ -97,7 +101,8 @@ const PlanTabs: React.FC<PlanTabsProps> = ({ theme = 'dark', onPlanSelect }) => 
         storage: '25GB SSD',
         location: 'Mumbai',
         features: ['Free DDoS Protection'],
-        addons: { unit: '₹30', backup: '₹25' }
+        addons: { unit: '₹30', backup: '₹25' },
+        planType: 'budget'
       },
       {
         name: 'Diamond Plan',
@@ -107,7 +112,8 @@ const PlanTabs: React.FC<PlanTabsProps> = ({ theme = 'dark', onPlanSelect }) => 
         storage: '30GB SSD',
         location: 'Mumbai',
         features: ['Free DDoS Protection'],
-        addons: { unit: '₹30', backup: '₹25' }
+        addons: { unit: '₹30', backup: '₹25' },
+        planType: 'budget'
       },
       {
         name: 'Netherite Plan',
@@ -117,7 +123,8 @@ const PlanTabs: React.FC<PlanTabsProps> = ({ theme = 'dark', onPlanSelect }) => 
         storage: '40GB SSD',
         location: 'Mumbai',
         features: ['Free DDoS Protection'],
-        addons: { unit: '₹30', backup: '₹25' }
+        addons: { unit: '₹30', backup: '₹25' },
+        planType: 'budget'
       }
     ],
     powered: [
@@ -129,7 +136,8 @@ const PlanTabs: React.FC<PlanTabsProps> = ({ theme = 'dark', onPlanSelect }) => 
         storage: '5GB SSD',
         location: 'Mumbai',
         features: ['Powered by Ryzen 9'],
-        addons: { unit: '₹50', backup: '₹25' }
+        addons: { unit: '₹50', backup: '₹25' },
+        planType: 'powered'
       },
       {
         name: 'Wood Plan',
@@ -139,7 +147,8 @@ const PlanTabs: React.FC<PlanTabsProps> = ({ theme = 'dark', onPlanSelect }) => 
         storage: '10GB SSD',
         location: 'Mumbai',
         features: ['Powered by Ryzen 9'],
-        addons: { unit: '₹50', backup: '₹25' }
+        addons: { unit: '₹50', backup: '₹25' },
+        planType: 'powered'
       },
       {
         name: 'Stone Plan',
@@ -149,7 +158,8 @@ const PlanTabs: React.FC<PlanTabsProps> = ({ theme = 'dark', onPlanSelect }) => 
         storage: '15GB SSD',
         location: 'Mumbai',
         features: ['Powered by Ryzen 9'],
-        addons: { unit: '₹50', backup: '₹25' }
+        addons: { unit: '₹50', backup: '₹25' },
+        planType: 'powered'
       },
       {
         name: 'Iron Plan',
@@ -159,7 +169,8 @@ const PlanTabs: React.FC<PlanTabsProps> = ({ theme = 'dark', onPlanSelect }) => 
         storage: '20GB SSD',
         location: 'Mumbai',
         features: ['Powered by Ryzen 9'],
-        addons: { unit: '₹50', backup: '₹25' }
+        addons: { unit: '₹50', backup: '₹25' },
+        planType: 'powered'
       },
       {
         name: 'Gold Plan',
@@ -169,7 +180,8 @@ const PlanTabs: React.FC<PlanTabsProps> = ({ theme = 'dark', onPlanSelect }) => 
         storage: '25GB SSD',
         location: 'Mumbai',
         features: ['Powered by Ryzen 9'],
-        addons: { unit: '₹50', backup: '₹25' }
+        addons: { unit: '₹50', backup: '₹25' },
+        planType: 'powered'
       },
       {
         name: 'Diamond Plan',
@@ -179,7 +191,8 @@ const PlanTabs: React.FC<PlanTabsProps> = ({ theme = 'dark', onPlanSelect }) => 
         storage: '30GB SSD',
         location: 'Mumbai',
         features: ['Powered by Ryzen 9'],
-        addons: { unit: '₹50', backup: '₹25' }
+        addons: { unit: '₹50', backup: '₹25' },
+        planType: 'powered'
       },
       {
         name: 'Netherite Plan',
@@ -189,7 +202,8 @@ const PlanTabs: React.FC<PlanTabsProps> = ({ theme = 'dark', onPlanSelect }) => 
         storage: '40GB SSD',
         location: 'Mumbai',
         features: ['Powered by Ryzen 9'],
-        addons: { unit: '₹50', backup: '₹25' }
+        addons: { unit: '₹50', backup: '₹25' },
+        planType: 'powered'
       }
     ],
     premium: [
@@ -201,7 +215,8 @@ const PlanTabs: React.FC<PlanTabsProps> = ({ theme = 'dark', onPlanSelect }) => 
         storage: '5GB SSD',
         location: 'Mumbai',
         features: ['Premium Node Quality', 'Powered by Ryzen 9'],
-        addons: { unit: '₹129', backup: '₹25' }
+        addons: { unit: '₹129', backup: '₹25' },
+        planType: 'premium'
       },
       {
         name: 'Wood Plan',
@@ -211,7 +226,8 @@ const PlanTabs: React.FC<PlanTabsProps> = ({ theme = 'dark', onPlanSelect }) => 
         storage: '10GB SSD',
         location: 'Mumbai',
         features: ['Premium Node Quality', 'Powered by Ryzen 9'],
-        addons: { unit: '₹129', backup: '₹25' }
+        addons: { unit: '₹129', backup: '₹25' },
+        planType: 'premium'
       },
       {
         name: 'Stone Plan',
@@ -221,7 +237,8 @@ const PlanTabs: React.FC<PlanTabsProps> = ({ theme = 'dark', onPlanSelect }) => 
         storage: '15GB SSD',
         location: 'Mumbai',
         features: ['Premium Node Quality', 'Powered by Ryzen 9'],
-        addons: { unit: '₹129', backup: '₹25' }
+        addons: { unit: '₹129', backup: '₹25' },
+        planType: 'premium'
       },
       {
         name: 'Iron Plan',
@@ -231,7 +248,8 @@ const PlanTabs: React.FC<PlanTabsProps> = ({ theme = 'dark', onPlanSelect }) => 
         storage: '20GB SSD',
         location: 'Mumbai',
         features: ['Premium Node Quality', 'Powered by Ryzen 9'],
-        addons: { unit: '₹129', backup: '₹25' }
+        addons: { unit: '₹129', backup: '₹25' },
+        planType: 'premium'
       },
       {
         name: 'Gold Plan',
@@ -241,7 +259,8 @@ const PlanTabs: React.FC<PlanTabsProps> = ({ theme = 'dark', onPlanSelect }) => 
         storage: '25GB SSD',
         location: 'Mumbai',
         features: ['Premium Node Quality', 'Powered by Ryzen 9'],
-        addons: { unit: '₹129', backup: '₹25' }
+        addons: { unit: '₹129', backup: '₹25' },
+        planType: 'premium'
       },
       {
         name: 'Diamond Plan',
@@ -251,7 +270,8 @@ const PlanTabs: React.FC<PlanTabsProps> = ({ theme = 'dark', onPlanSelect }) => 
         storage: '30GB SSD',
         location: 'Mumbai',
         features: ['Premium Node Quality', 'Powered by Ryzen 9'],
-        addons: { unit: '₹129', backup: '₹25' }
+        addons: { unit: '₹129', backup: '₹25' },
+        planType: 'premium'
       },
       {
         name: 'Netherite Plan',
@@ -261,7 +281,8 @@ const PlanTabs: React.FC<PlanTabsProps> = ({ theme = 'dark', onPlanSelect }) => 
         storage: '40GB SSD',
         location: 'Mumbai',
         features: ['Premium Node Quality', 'Powered by Ryzen 9'],
-        addons: { unit: '₹129', backup: '₹25' }
+        addons: { unit: '₹129', backup: '₹25' },
+        planType: 'premium'
       }
     ]
   };
@@ -270,57 +291,57 @@ const PlanTabs: React.FC<PlanTabsProps> = ({ theme = 'dark', onPlanSelect }) => 
     {
       id: 'budget',
       name: 'Budget Plans',
-      icon: <Gamepad2 className="w-5 h-5" />,
+      icon: <Shield className="w-4 h-4 sm:w-5 sm:h-5" />,
       color: 'from-green-500 to-emerald-500'
     },
     {
       id: 'powered',
       name: 'Powered Plans',
-      icon: <Zap className="w-5 h-5" />,
+      icon: <Zap className="w-4 h-4 sm:w-5 sm:h-5" />,
       color: 'from-orange-500 to-yellow-500'
     },
     {
       id: 'premium',
       name: 'Premium Plans',
-      icon: <Star className="w-5 h-5" />,
+      icon: <Crown className="w-4 h-4 sm:w-5 sm:h-5" />,
       color: 'from-purple-500 to-pink-500'
     }
   ];
 
   return (
-    <section className="py-20 px-4 sm:px-6 lg:px-8">
+    <section className="py-12 sm:py-20 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-16">
-          <h2 className={`text-4xl md:text-5xl font-bold ${themeStyles.text} mb-4`}>
+        <div className="text-center mb-12 sm:mb-16">
+          <h2 className={`text-3xl sm:text-4xl md:text-5xl font-bold ${themeStyles.text} mb-4`}>
             Minecraft Hosting Plans
           </h2>
-          <p className={`text-xl ${themeStyles.textSecondary}`}>
+          <p className={`text-lg sm:text-xl ${themeStyles.textSecondary}`}>
             Choose the perfect plan for your Minecraft server
           </p>
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex flex-col sm:flex-row justify-center mb-12">
-          <div className={`${themeStyles.card} p-2 rounded-2xl border inline-flex`}>
+        <div className="flex justify-center mb-8 sm:mb-12">
+          <div className={`${themeStyles.card} p-1 sm:p-2 rounded-xl sm:rounded-2xl border inline-flex flex-col sm:flex-row w-full sm:w-auto max-w-md sm:max-w-none`}>
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center space-x-2 ${
+                className={`px-4 sm:px-6 py-2 sm:py-3 rounded-lg sm:rounded-xl font-semibold transition-all duration-300 flex items-center justify-center space-x-2 text-sm sm:text-base mb-1 sm:mb-0 ${
                   activeTab === tab.id
                     ? themeStyles.tabActive
                     : themeStyles.tabInactive
                 }`}
               >
                 {tab.icon}
-                <span>{tab.name}</span>
+                <span className="whitespace-nowrap">{tab.name}</span>
               </button>
             ))}
           </div>
         </div>
 
         {/* Plans Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
           {minecraftPlans[activeTab as keyof typeof minecraftPlans].map((plan, index) => (
             <PlanCard
               key={index}
@@ -334,14 +355,14 @@ const PlanTabs: React.FC<PlanTabsProps> = ({ theme = 'dark', onPlanSelect }) => 
         </div>
 
         {/* Bottom Info */}
-        <div className={`mt-16 text-center ${themeStyles.card} p-8 rounded-2xl border`}>
-          <h3 className={`text-2xl font-bold ${themeStyles.text} mb-4`}>
+        <div className={`mt-12 sm:mt-16 text-center ${themeStyles.card} p-6 sm:p-8 rounded-2xl border`}>
+          <h3 className={`text-xl sm:text-2xl font-bold ${themeStyles.text} mb-4`}>
             Need a Custom Solution?
           </h3>
-          <p className={`${themeStyles.textSecondary} mb-6`}>
+          <p className={`${themeStyles.textSecondary} mb-6 text-sm sm:text-base`}>
             Contact our team for enterprise solutions and bulk discounts.
           </p>
-          <button className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-8 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-purple-500/25">
+          <button className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-6 sm:px-8 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-purple-500/25 text-sm sm:text-base">
             Contact Sales
           </button>
         </div>

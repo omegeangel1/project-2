@@ -24,7 +24,9 @@ import {
   Heart,
   Sparkles,
   MessageCircle,
-  ExternalLink
+  ExternalLink,
+  Menu,
+  X
 } from 'lucide-react';
 import PaymentForm from './components/PaymentForm';
 import DomainOrderForm from './components/DomainOrderForm';
@@ -43,6 +45,7 @@ function App() {
   const [searchResults, setSearchResults] = useState([]);
   const [theme, setTheme] = useState('dark');
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -137,19 +140,19 @@ function App() {
           onClick={() => setTheme('dark')}
           className={`p-2 rounded-lg transition-all duration-300 ${theme === 'dark' ? 'bg-purple-500 text-white shadow-lg' : 'text-gray-400 hover:text-white hover:bg-white/10'}`}
         >
-          <Moon className="w-4 h-4" />
+          <Moon className="w-3 h-3 sm:w-4 sm:h-4" />
         </button>
         <button
           onClick={() => setTheme('light')}
           className={`p-2 rounded-lg transition-all duration-300 ${theme === 'light' ? 'bg-blue-500 text-white shadow-lg' : 'text-gray-400 hover:text-white hover:bg-white/10'}`}
         >
-          <Sun className="w-4 h-4" />
+          <Sun className="w-3 h-3 sm:w-4 sm:h-4" />
         </button>
         <button
           onClick={() => setTheme('glass')}
           className={`p-2 rounded-lg transition-all duration-300 ${theme === 'glass' ? 'bg-pink-500 text-white shadow-lg' : 'text-gray-400 hover:text-white hover:bg-white/10'}`}
         >
-          <Palette className="w-4 h-4" />
+          <Palette className="w-3 h-3 sm:w-4 sm:h-4" />
         </button>
       </div>
     </div>
@@ -194,8 +197,8 @@ function App() {
       <header className={`${isScrolled ? themeStyles.card : 'bg-transparent'} border-b border-white/10 sticky top-0 z-50 transition-all duration-300`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
-            <div className="flex items-center space-x-3 cursor-pointer" onClick={() => setCurrentView('home')}>
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg overflow-hidden">
+            <div className="flex items-center space-x-2 sm:space-x-3 cursor-pointer" onClick={() => setCurrentView('home')}>
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center shadow-lg overflow-hidden">
                 <img 
                   src="/05b5bc0e84997d92e62826cfce30b63a.webp" 
                   alt="Demon Node Logo" 
@@ -203,11 +206,13 @@ function App() {
                 />
               </div>
               <div>
-                <h1 className={`text-2xl font-bold ${themeStyles.text}`}>Demon Node™</h1>
-                <p className={`text-sm ${themeStyles.textMuted}`}>Premium Hosting Solutions</p>
+                <h1 className={`text-lg sm:text-2xl font-bold ${themeStyles.text}`}>Demon Node™</h1>
+                <p className={`text-xs sm:text-sm ${themeStyles.textMuted} hidden sm:block`}>Premium Hosting Solutions</p>
               </div>
             </div>
-            <nav className="hidden md:flex items-center space-x-8">
+
+            {/* Desktop Navigation */}
+            <nav className="hidden lg:flex items-center space-x-8">
               <button 
                 onClick={() => setCurrentView('home')}
                 className={`${currentView === 'home' ? 'text-purple-400' : themeStyles.textSecondary} hover:text-purple-400 transition-colors font-medium`}
@@ -238,12 +243,73 @@ function App() {
               </a>
               <ThemeToggle />
             </nav>
+
+            {/* Mobile Menu Button */}
+            <div className="lg:hidden flex items-center space-x-2">
+              <ThemeToggle />
+              <button
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className={`p-2 rounded-lg ${themeStyles.card} border`}
+              >
+                {isMobileMenuOpen ? (
+                  <X className="w-5 h-5 text-white" />
+                ) : (
+                  <Menu className="w-5 h-5 text-white" />
+                )}
+              </button>
+            </div>
           </div>
+
+          {/* Mobile Navigation */}
+          {isMobileMenuOpen && (
+            <div className={`lg:hidden ${themeStyles.card} border rounded-xl p-4 mb-4`}>
+              <nav className="flex flex-col space-y-4">
+                <button 
+                  onClick={() => {
+                    setCurrentView('home');
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className={`${currentView === 'home' ? 'text-purple-400' : themeStyles.textSecondary} hover:text-purple-400 transition-colors font-medium text-left`}
+                >
+                  Home
+                </button>
+                <button 
+                  onClick={() => {
+                    setCurrentView('domains');
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className={`${currentView === 'domains' ? 'text-purple-400' : themeStyles.textSecondary} hover:text-purple-400 transition-colors font-medium text-left`}
+                >
+                  Domains
+                </button>
+                <button 
+                  onClick={() => {
+                    setCurrentView('hosting');
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className={`${currentView === 'hosting' ? 'text-purple-400' : themeStyles.textSecondary} hover:text-purple-400 transition-colors font-medium text-left`}
+                >
+                  Hosting
+                </button>
+                <a 
+                  href="https://discord.gg/Qy6tuNJmwJ" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className={`${themeStyles.textSecondary} hover:text-purple-400 transition-colors font-medium flex items-center`}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  <MessageCircle className="w-4 h-4 mr-1" />
+                  Discord
+                  <ExternalLink className="w-3 h-3 ml-1" />
+                </a>
+              </nav>
+            </div>
+          )}
         </div>
       </header>
 
       {/* Hero Section */}
-      <section id="home" className="py-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+      <section id="home" className="py-12 sm:py-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
         {/* Background Effects */}
         <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-pink-500/10 blur-3xl"></div>
         <div className="absolute top-20 left-20 w-72 h-72 bg-purple-500/20 rounded-full blur-3xl animate-pulse"></div>
@@ -251,114 +317,114 @@ function App() {
         
         <div className="max-w-7xl mx-auto text-center relative z-10">
           {/* Premium Badge */}
-          <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-purple-500/20 to-pink-500/20 backdrop-blur-xl border border-white/20 rounded-full px-6 py-3 mb-8 animate-fade-in-up">
-            <Sparkles className="w-5 h-5 text-purple-400" />
-            <span className={`text-sm font-semibold ${themeStyles.text}`}>✨ Premium Services for Indian Gamers</span>
+          <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-purple-500/20 to-pink-500/20 backdrop-blur-xl border border-white/20 rounded-full px-4 sm:px-6 py-2 sm:py-3 mb-6 sm:mb-8 animate-fade-in-up">
+            <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-purple-400" />
+            <span className={`text-xs sm:text-sm font-semibold ${themeStyles.text}`}>✨ Premium Services for Indian Gamers</span>
           </div>
 
-          <h1 className={`text-5xl md:text-7xl font-bold ${themeStyles.text} mb-6 leading-tight`}>
+          <h1 className={`text-3xl sm:text-5xl md:text-7xl font-bold ${themeStyles.text} mb-4 sm:mb-6 leading-tight`}>
             Power Your{' '}
             <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent animate-pulse">
               Digital Dreams
             </span>
           </h1>
           
-          <p className={`text-xl md:text-2xl ${themeStyles.textSecondary} mb-12 max-w-4xl mx-auto leading-relaxed`}>
+          <p className={`text-base sm:text-xl md:text-2xl ${themeStyles.textSecondary} mb-8 sm:mb-12 max-w-4xl mx-auto leading-relaxed px-4`}>
             Premium domain registration and blazing-fast Minecraft hosting designed specifically for Indian gamers. 
             Choose your path to digital excellence.
           </p>
           
-          <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
+          <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center items-center px-4">
             <button 
               onClick={() => setCurrentView('domains')}
-              className={`${themeStyles.pinkButton} ${themeStyles.pinkGlow} text-white px-10 py-5 rounded-2xl font-bold text-lg transition-all duration-300 transform hover:scale-105 flex items-center group`}
+              className={`w-full sm:w-auto ${themeStyles.pinkButton} ${themeStyles.pinkGlow} text-white px-6 sm:px-10 py-4 sm:py-5 rounded-2xl font-bold text-sm sm:text-lg transition-all duration-300 transform hover:scale-105 flex items-center justify-center group`}
             >
-              <Globe className="w-6 h-6 mr-3 group-hover:rotate-12 transition-transform" />
+              <Globe className="w-5 h-5 sm:w-6 sm:h-6 mr-2 sm:mr-3 group-hover:rotate-12 transition-transform" />
               Register Domain
-              <ArrowRight className="w-5 h-5 ml-3 group-hover:translate-x-1 transition-transform" />
+              <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2 sm:ml-3 group-hover:translate-x-1 transition-transform" />
             </button>
             <button 
               onClick={() => setCurrentView('hosting')}
-              className={`${themeStyles.button} ${themeStyles.glowButton} text-white px-10 py-5 rounded-2xl font-bold text-lg transition-all duration-300 transform hover:scale-105 flex items-center group`}
+              className={`w-full sm:w-auto ${themeStyles.button} ${themeStyles.glowButton} text-white px-6 sm:px-10 py-4 sm:py-5 rounded-2xl font-bold text-sm sm:text-lg transition-all duration-300 transform hover:scale-105 flex items-center justify-center group`}
             >
-              <Gamepad2 className="w-6 h-6 mr-3 group-hover:rotate-12 transition-transform" />
+              <Gamepad2 className="w-5 h-5 sm:w-6 sm:h-6 mr-2 sm:mr-3 group-hover:rotate-12 transition-transform" />
               Start Hosting
-              <ArrowRight className="w-5 h-5 ml-3 group-hover:translate-x-1 transition-transform" />
+              <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2 sm:ml-3 group-hover:translate-x-1 transition-transform" />
             </button>
           </div>
         </div>
       </section>
 
       {/* Service Cards */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8">
+      <section className="py-12 sm:py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
             {/* Domain Registration Card */}
-            <div className={`${themeStyles.card} p-8 rounded-3xl group hover:scale-105 transition-all duration-500 border hover:border-pink-500/30 relative overflow-hidden`}>
+            <div className={`${themeStyles.card} p-6 sm:p-8 rounded-3xl group hover:scale-105 transition-all duration-500 border hover:border-pink-500/30 relative overflow-hidden`}>
               <div className="absolute inset-0 bg-gradient-to-br from-pink-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
               <div className="relative z-10">
-                <div className="w-16 h-16 bg-gradient-to-r from-pink-500 to-rose-500 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-pink-500/25">
-                  <Globe className="w-8 h-8 text-white" />
+                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-pink-500 to-rose-500 rounded-2xl flex items-center justify-center mb-4 sm:mb-6 shadow-lg shadow-pink-500/25 animate-pulse">
+                  <Globe className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                 </div>
-                <h3 className={`text-3xl font-bold ${themeStyles.text} mb-4`}>Domain Registration</h3>
-                <p className={`${themeStyles.textSecondary} text-lg mb-6 leading-relaxed`}>
+                <h3 className={`text-2xl sm:text-3xl font-bold ${themeStyles.text} mb-3 sm:mb-4`}>Domain Registration</h3>
+                <p className={`${themeStyles.textSecondary} text-base sm:text-lg mb-4 sm:mb-6 leading-relaxed`}>
                   Secure your perfect domain with instant activation, premium extensions, and competitive pricing starting from ₹299.
                 </p>
-                <ul className="space-y-3 mb-8">
-                  <li className={`flex items-center ${themeStyles.textSecondary}`}>
-                    <CheckCircle className="w-5 h-5 mr-3 text-green-400" />
+                <ul className="space-y-2 sm:space-y-3 mb-6 sm:mb-8">
+                  <li className={`flex items-center ${themeStyles.textSecondary} text-sm sm:text-base`}>
+                    <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 mr-2 sm:mr-3 text-green-400" />
                     <span>Instant Domain Activation</span>
                   </li>
-                  <li className={`flex items-center ${themeStyles.textSecondary}`}>
-                    <CheckCircle className="w-5 h-5 mr-3 text-green-400" />
+                  <li className={`flex items-center ${themeStyles.textSecondary} text-sm sm:text-base`}>
+                    <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 mr-2 sm:mr-3 text-green-400" />
                     <span>Free DNS Management</span>
                   </li>
-                  <li className={`flex items-center ${themeStyles.textSecondary}`}>
-                    <CheckCircle className="w-5 h-5 mr-3 text-green-400" />
+                  <li className={`flex items-center ${themeStyles.textSecondary} text-sm sm:text-base`}>
+                    <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 mr-2 sm:mr-3 text-green-400" />
                     <span>Domain Privacy Protection</span>
                   </li>
                 </ul>
                 <button 
                   onClick={() => setCurrentView('domains')}
-                  className={`${themeStyles.pinkButton} ${themeStyles.pinkGlow} text-white px-8 py-4 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 flex items-center group`}
+                  className={`w-full sm:w-auto ${themeStyles.pinkButton} ${themeStyles.pinkGlow} text-white px-6 sm:px-8 py-3 sm:py-4 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 flex items-center justify-center group text-sm sm:text-base`}
                 >
                   Get Started
-                  <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                  <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2 group-hover:translate-x-1 transition-transform" />
                 </button>
               </div>
             </div>
 
             {/* Minecraft Hosting Card */}
-            <div className={`${themeStyles.card} p-8 rounded-3xl group hover:scale-105 transition-all duration-500 border hover:border-purple-500/30 relative overflow-hidden`}>
+            <div className={`${themeStyles.card} p-6 sm:p-8 rounded-3xl group hover:scale-105 transition-all duration-500 border hover:border-purple-500/30 relative overflow-hidden`}>
               <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
               <div className="relative z-10">
-                <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-blue-500 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-purple-500/25">
-                  <Gamepad2 className="w-8 h-8 text-white" />
+                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-purple-500 to-blue-500 rounded-2xl flex items-center justify-center mb-4 sm:mb-6 shadow-lg shadow-purple-500/25 animate-pulse">
+                  <Gamepad2 className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                 </div>
-                <h3 className={`text-3xl font-bold ${themeStyles.text} mb-4`}>Minecraft Hosting</h3>
-                <p className={`${themeStyles.textSecondary} text-lg mb-6 leading-relaxed`}>
+                <h3 className={`text-2xl sm:text-3xl font-bold ${themeStyles.text} mb-3 sm:mb-4`}>Minecraft Hosting</h3>
+                <p className={`${themeStyles.textSecondary} text-base sm:text-lg mb-4 sm:mb-6 leading-relaxed`}>
                   High-performance Minecraft servers with Indian locations, 99.9% uptime, and plans starting from just ₹49/month.
                 </p>
-                <ul className="space-y-3 mb-8">
-                  <li className={`flex items-center ${themeStyles.textSecondary}`}>
-                    <CheckCircle className="w-5 h-5 mr-3 text-green-400" />
+                <ul className="space-y-2 sm:space-y-3 mb-6 sm:mb-8">
+                  <li className={`flex items-center ${themeStyles.textSecondary} text-sm sm:text-base`}>
+                    <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 mr-2 sm:mr-3 text-green-400" />
                     <span>Indian Server Locations</span>
                   </li>
-                  <li className={`flex items-center ${themeStyles.textSecondary}`}>
-                    <CheckCircle className="w-5 h-5 mr-3 text-green-400" />
+                  <li className={`flex items-center ${themeStyles.textSecondary} text-sm sm:text-base`}>
+                    <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 mr-2 sm:mr-3 text-green-400" />
                     <span>99.9% Uptime Guarantee</span>
                   </li>
-                  <li className={`flex items-center ${themeStyles.textSecondary}`}>
-                    <CheckCircle className="w-5 h-5 mr-3 text-green-400" />
+                  <li className={`flex items-center ${themeStyles.textSecondary} text-sm sm:text-base`}>
+                    <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 mr-2 sm:mr-3 text-green-400" />
                     <span>24/7 Premium Support</span>
                   </li>
                 </ul>
                 <button 
                   onClick={() => setCurrentView('hosting')}
-                  className={`${themeStyles.button} ${themeStyles.glowButton} text-white px-8 py-4 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 flex items-center group`}
+                  className={`w-full sm:w-auto ${themeStyles.button} ${themeStyles.glowButton} text-white px-6 sm:px-8 py-3 sm:py-4 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 flex items-center justify-center group text-sm sm:text-base`}
                 >
                   Choose Plan
-                  <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                  <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2 group-hover:translate-x-1 transition-transform" />
                 </button>
               </div>
             </div>
@@ -367,106 +433,106 @@ function App() {
       </section>
 
       {/* Stats Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8">
+      <section className="py-12 sm:py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            <div className={`${themeStyles.card} p-6 rounded-2xl text-center group hover:scale-105 transition-all duration-300`}>
-              <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center mx-auto mb-4">
-                <Users className="w-6 h-6 text-white" />
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-8">
+            <div className={`${themeStyles.card} p-4 sm:p-6 rounded-2xl text-center group hover:scale-105 transition-all duration-300`}>
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center mx-auto mb-3 sm:mb-4 animate-pulse">
+                <Users className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
               </div>
-              <div className={`text-3xl font-bold ${themeStyles.text} mb-2`}>10K+</div>
-              <div className={`text-sm ${themeStyles.textMuted}`}>Happy Customers</div>
+              <div className={`text-2xl sm:text-3xl font-bold ${themeStyles.text} mb-1 sm:mb-2`}>10K+</div>
+              <div className={`text-xs sm:text-sm ${themeStyles.textMuted}`}>Happy Customers</div>
             </div>
-            <div className={`${themeStyles.card} p-6 rounded-2xl text-center group hover:scale-105 transition-all duration-300`}>
-              <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center mx-auto mb-4">
-                <TrendingUp className="w-6 h-6 text-white" />
+            <div className={`${themeStyles.card} p-4 sm:p-6 rounded-2xl text-center group hover:scale-105 transition-all duration-300`}>
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center mx-auto mb-3 sm:mb-4 animate-pulse">
+                <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
               </div>
-              <div className={`text-3xl font-bold ${themeStyles.text} mb-2`}>99.9%</div>
-              <div className={`text-sm ${themeStyles.textMuted}`}>Uptime</div>
+              <div className={`text-2xl sm:text-3xl font-bold ${themeStyles.text} mb-1 sm:mb-2`}>99.9%</div>
+              <div className={`text-xs sm:text-sm ${themeStyles.textMuted}`}>Uptime</div>
             </div>
-            <div className={`${themeStyles.card} p-6 rounded-2xl text-center group hover:scale-105 transition-all duration-300`}>
-              <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center mx-auto mb-4">
-                <Clock className="w-6 h-6 text-white" />
+            <div className={`${themeStyles.card} p-4 sm:p-6 rounded-2xl text-center group hover:scale-105 transition-all duration-300`}>
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center mx-auto mb-3 sm:mb-4 animate-pulse">
+                <Clock className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
               </div>
-              <div className={`text-3xl font-bold ${themeStyles.text} mb-2`}>24/7</div>
-              <div className={`text-sm ${themeStyles.textMuted}`}>Support</div>
+              <div className={`text-2xl sm:text-3xl font-bold ${themeStyles.text} mb-1 sm:mb-2`}>24/7</div>
+              <div className={`text-xs sm:text-sm ${themeStyles.textMuted}`}>Support</div>
             </div>
-            <div className={`${themeStyles.card} p-6 rounded-2xl text-center group hover:scale-105 transition-all duration-300`}>
-              <div className="w-12 h-12 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-xl flex items-center justify-center mx-auto mb-4">
-                <Star className="w-6 h-6 text-white" />
+            <div className={`${themeStyles.card} p-4 sm:p-6 rounded-2xl text-center group hover:scale-105 transition-all duration-300`}>
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-xl flex items-center justify-center mx-auto mb-3 sm:mb-4 animate-pulse">
+                <Star className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
               </div>
-              <div className={`text-3xl font-bold ${themeStyles.text} mb-2`}>5★</div>
-              <div className={`text-sm ${themeStyles.textMuted}`}>Rating</div>
+              <div className={`text-2xl sm:text-3xl font-bold ${themeStyles.text} mb-1 sm:mb-2`}>5★</div>
+              <div className={`text-xs sm:text-sm ${themeStyles.textMuted}`}>Rating</div>
             </div>
           </div>
         </div>
       </section>
 
       {/* Testimonials Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8">
+      <section className="py-12 sm:py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className={`text-4xl md:text-5xl font-bold ${themeStyles.text} mb-4`}>What Our Customers Say</h2>
-            <p className={`text-xl ${themeStyles.textSecondary}`}>Join thousands of satisfied customers who trust us</p>
+          <div className="text-center mb-12 sm:mb-16">
+            <h2 className={`text-3xl sm:text-4xl md:text-5xl font-bold ${themeStyles.text} mb-4`}>What Our Customers Say</h2>
+            <p className={`text-lg sm:text-xl ${themeStyles.textSecondary}`}>Join thousands of satisfied customers who trust us</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className={`${themeStyles.card} p-8 rounded-2xl group hover:scale-105 transition-all duration-300 border hover:border-yellow-500/30`}>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
+            <div className={`${themeStyles.card} p-6 sm:p-8 rounded-2xl group hover:scale-105 transition-all duration-300 border hover:border-yellow-500/30`}>
               <div className="flex items-center mb-4">
                 {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />
+                  <Star key={i} className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-400 fill-current" />
                 ))}
               </div>
-              <p className={`${themeStyles.textSecondary} mb-6 text-lg leading-relaxed`}>
+              <p className={`${themeStyles.textSecondary} mb-4 sm:mb-6 text-base sm:text-lg leading-relaxed`}>
                 "Demon Node™ has been amazing! My server runs smoothly with zero downtime. Best hosting service I've used."
               </p>
               <div className="flex items-center">
-                <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mr-4">
-                  <span className="text-white font-bold">AS</span>
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mr-3 sm:mr-4">
+                  <span className="text-white font-bold text-sm sm:text-base">AS</span>
                 </div>
                 <div>
-                  <div className={`font-semibold ${themeStyles.text}`}>Arjun Sharma</div>
-                  <div className={`text-sm ${themeStyles.textMuted}`}>Gaming Community Owner</div>
+                  <div className={`font-semibold ${themeStyles.text} text-sm sm:text-base`}>Arjun Sharma</div>
+                  <div className={`text-xs sm:text-sm ${themeStyles.textMuted}`}>Gaming Community Owner</div>
                 </div>
               </div>
             </div>
 
-            <div className={`${themeStyles.card} p-8 rounded-2xl group hover:scale-105 transition-all duration-300 border hover:border-yellow-500/30`}>
+            <div className={`${themeStyles.card} p-6 sm:p-8 rounded-2xl group hover:scale-105 transition-all duration-300 border hover:border-yellow-500/30`}>
               <div className="flex items-center mb-4">
                 {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />
+                  <Star key={i} className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-400 fill-current" />
                 ))}
               </div>
-              <p className={`${themeStyles.textSecondary} mb-6 text-lg leading-relaxed`}>
+              <p className={`${themeStyles.textSecondary} mb-4 sm:mb-6 text-base sm:text-lg leading-relaxed`}>
                 "Best hosting service in India. Great support and affordable pricing! Highly recommend to all gamers."
               </p>
               <div className="flex items-center">
-                <div className="w-12 h-12 bg-gradient-to-r from-pink-500 to-rose-500 rounded-full flex items-center justify-center mr-4">
-                  <span className="text-white font-bold">PP</span>
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-pink-500 to-rose-500 rounded-full flex items-center justify-center mr-3 sm:mr-4">
+                  <span className="text-white font-bold text-sm sm:text-base">PP</span>
                 </div>
                 <div>
-                  <div className={`font-semibold ${themeStyles.text}`}>Priya Patel</div>
-                  <div className={`text-sm ${themeStyles.textMuted}`}>Content Creator</div>
+                  <div className={`font-semibold ${themeStyles.text} text-sm sm:text-base`}>Priya Patel</div>
+                  <div className={`text-xs sm:text-sm ${themeStyles.textMuted}`}>Content Creator</div>
                 </div>
               </div>
             </div>
 
-            <div className={`${themeStyles.card} p-8 rounded-2xl group hover:scale-105 transition-all duration-300 border hover:border-yellow-500/30`}>
+            <div className={`${themeStyles.card} p-6 sm:p-8 rounded-2xl group hover:scale-105 transition-all duration-300 border hover:border-yellow-500/30`}>
               <div className="flex items-center mb-4">
                 {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />
+                  <Star key={i} className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-400 fill-current" />
                 ))}
               </div>
-              <p className={`${themeStyles.textSecondary} mb-6 text-lg leading-relaxed`}>
+              <p className={`${themeStyles.textSecondary} mb-4 sm:mb-6 text-base sm:text-lg leading-relaxed`}>
                 "Domain registration was instant and the hosting is blazing fast. Perfect for my Minecraft server!"
               </p>
               <div className="flex items-center">
-                <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full flex items-center justify-center mr-4">
-                  <span className="text-white font-bold">RK</span>
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full flex items-center justify-center mr-3 sm:mr-4">
+                  <span className="text-white font-bold text-sm sm:text-base">RK</span>
                 </div>
                 <div>
-                  <div className={`font-semibold ${themeStyles.text}`}>Rohit Kumar</div>
-                  <div className={`text-sm ${themeStyles.textMuted}`}>Server Administrator</div>
+                  <div className={`font-semibold ${themeStyles.text} text-sm sm:text-base`}>Rohit Kumar</div>
+                  <div className={`text-xs sm:text-sm ${themeStyles.textMuted}`}>Server Administrator</div>
                 </div>
               </div>
             </div>
@@ -475,29 +541,29 @@ function App() {
       </section>
 
       {/* Ready to Get Started Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8">
+      <section className="py-12 sm:py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto text-center">
-          <div className={`${themeStyles.card} p-12 rounded-3xl border hover:border-purple-500/30 transition-all duration-300`}>
-            <h2 className={`text-4xl md:text-5xl font-bold ${themeStyles.text} mb-6`}>Ready to Get Started?</h2>
-            <p className={`text-xl ${themeStyles.textSecondary} mb-10 leading-relaxed`}>
+          <div className={`${themeStyles.card} p-8 sm:p-12 rounded-3xl border hover:border-purple-500/30 transition-all duration-300`}>
+            <h2 className={`text-3xl sm:text-4xl md:text-5xl font-bold ${themeStyles.text} mb-4 sm:mb-6`}>Ready to Get Started?</h2>
+            <p className={`text-lg sm:text-xl ${themeStyles.textSecondary} mb-8 sm:mb-10 leading-relaxed`}>
               Join thousands of satisfied customers who trust Demon Node™ for their digital needs.
             </p>
-            <div className="flex flex-col sm:flex-row gap-6 justify-center">
+            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center">
               <button 
                 onClick={() => setCurrentView('domains')}
-                className={`${themeStyles.pinkButton} ${themeStyles.pinkGlow} text-white px-10 py-5 rounded-2xl font-bold text-lg transition-all duration-300 transform hover:scale-105 flex items-center justify-center group`}
+                className={`w-full sm:w-auto ${themeStyles.pinkButton} ${themeStyles.pinkGlow} text-white px-6 sm:px-10 py-4 sm:py-5 rounded-2xl font-bold text-sm sm:text-lg transition-all duration-300 transform hover:scale-105 flex items-center justify-center group`}
               >
-                <Globe className="w-6 h-6 mr-3 group-hover:rotate-12 transition-transform" />
+                <Globe className="w-5 h-5 sm:w-6 sm:h-6 mr-2 sm:mr-3 group-hover:rotate-12 transition-transform" />
                 Register Domain
-                <ArrowRight className="w-5 h-5 ml-3 group-hover:translate-x-1 transition-transform" />
+                <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2 sm:ml-3 group-hover:translate-x-1 transition-transform" />
               </button>
               <button 
                 onClick={() => setCurrentView('hosting')}
-                className={`${themeStyles.button} ${themeStyles.glowButton} text-white px-10 py-5 rounded-2xl font-bold text-lg transition-all duration-300 transform hover:scale-105 flex items-center justify-center group`}
+                className={`w-full sm:w-auto ${themeStyles.button} ${themeStyles.glowButton} text-white px-6 sm:px-10 py-4 sm:py-5 rounded-2xl font-bold text-sm sm:text-lg transition-all duration-300 transform hover:scale-105 flex items-center justify-center group`}
               >
-                <Gamepad2 className="w-6 h-6 mr-3 group-hover:rotate-12 transition-transform" />
+                <Gamepad2 className="w-5 h-5 sm:w-6 sm:h-6 mr-2 sm:mr-3 group-hover:rotate-12 transition-transform" />
                 Start Hosting
-                <ArrowRight className="w-5 h-5 ml-3 group-hover:translate-x-1 transition-transform" />
+                <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2 sm:ml-3 group-hover:translate-x-1 transition-transform" />
               </button>
             </div>
           </div>
@@ -505,27 +571,27 @@ function App() {
       </section>
 
       {/* Footer */}
-      <footer className={`${themeStyles.card} border-t border-white/10 py-12 px-4 sm:px-6 lg:px-8`}>
+      <footer className={`${themeStyles.card} border-t border-white/10 py-8 sm:py-12 px-4 sm:px-6 lg:px-8`}>
         <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8">
             <div>
-              <div className="flex items-center space-x-3 mb-4">
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center shadow-lg overflow-hidden">
+              <div className="flex items-center space-x-2 sm:space-x-3 mb-3 sm:mb-4">
+                <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center shadow-lg overflow-hidden">
                   <img 
                     src="/05b5bc0e84997d92e62826cfce30b63a.webp" 
                     alt="Demon Node Logo" 
                     className="w-full h-full object-cover"
                   />
                 </div>
-                <span className={`text-xl font-bold ${themeStyles.text}`}>Demon Node™</span>
+                <span className={`text-lg sm:text-xl font-bold ${themeStyles.text}`}>Demon Node™</span>
               </div>
-              <p className={`${themeStyles.textSecondary} text-sm leading-relaxed`}>
+              <p className={`${themeStyles.textSecondary} text-xs sm:text-sm leading-relaxed`}>
                 Premium hosting solutions designed for Indian gamers and businesses.
               </p>
             </div>
             <div>
-              <h4 className={`font-semibold ${themeStyles.text} mb-4`}>Services</h4>
-              <ul className={`space-y-2 text-sm ${themeStyles.textSecondary}`}>
+              <h4 className={`font-semibold ${themeStyles.text} mb-3 sm:mb-4 text-sm sm:text-base`}>Services</h4>
+              <ul className={`space-y-1 sm:space-y-2 text-xs sm:text-sm ${themeStyles.textSecondary}`}>
                 <li className="hover:text-purple-400 transition-colors cursor-pointer">Minecraft Hosting</li>
                 <li className="hover:text-purple-400 transition-colors cursor-pointer">Domain Registration</li>
                 <li className="hover:text-purple-400 transition-colors cursor-pointer">DDoS Protection</li>
@@ -533,8 +599,8 @@ function App() {
               </ul>
             </div>
             <div>
-              <h4 className={`font-semibold ${themeStyles.text} mb-4`}>Company</h4>
-              <ul className={`space-y-2 text-sm ${themeStyles.textSecondary}`}>
+              <h4 className={`font-semibold ${themeStyles.text} mb-3 sm:mb-4 text-sm sm:text-base`}>Company</h4>
+              <ul className={`space-y-1 sm:space-y-2 text-xs sm:text-sm ${themeStyles.textSecondary}`}>
                 <li className="hover:text-purple-400 transition-colors cursor-pointer">About Us</li>
                 <li className="hover:text-purple-400 transition-colors cursor-pointer">Contact</li>
                 <li className="hover:text-purple-400 transition-colors cursor-pointer">Terms of Service</li>
@@ -542,8 +608,8 @@ function App() {
               </ul>
             </div>
             <div>
-              <h4 className={`font-semibold ${themeStyles.text} mb-4`}>Connect</h4>
-              <ul className={`space-y-2 text-sm ${themeStyles.textSecondary}`}>
+              <h4 className={`font-semibold ${themeStyles.text} mb-3 sm:mb-4 text-sm sm:text-base`}>Connect</h4>
+              <ul className={`space-y-1 sm:space-y-2 text-xs sm:text-sm ${themeStyles.textSecondary}`}>
                 <li>
                   <a 
                     href="https://discord.gg/Qy6tuNJmwJ" 
@@ -551,9 +617,9 @@ function App() {
                     rel="noopener noreferrer"
                     className="hover:text-purple-400 transition-colors cursor-pointer flex items-center"
                   >
-                    <MessageCircle className="w-4 h-4 mr-2" />
+                    <MessageCircle className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                     Discord Server
-                    <ExternalLink className="w-3 h-3 ml-1" />
+                    <ExternalLink className="w-2 h-2 sm:w-3 sm:h-3 ml-1" />
                   </a>
                 </li>
                 <li className="hover:text-purple-400 transition-colors cursor-pointer">Support Tickets</li>
@@ -562,8 +628,8 @@ function App() {
               </ul>
             </div>
           </div>
-          <div className={`border-t border-white/10 mt-8 pt-8 text-center ${themeStyles.textSecondary} text-sm`}>
-            <p>&copy; 2024 Demon Node™. All rights reserved. Made with <Heart className="w-4 h-4 inline text-red-400" /> for Indian gamers.</p>
+          <div className={`border-t border-white/10 mt-6 sm:mt-8 pt-6 sm:pt-8 text-center ${themeStyles.textSecondary} text-xs sm:text-sm`}>
+            <p>&copy; 2024 Demon Node™. All rights reserved. Made with <Heart className="w-3 h-3 sm:w-4 sm:h-4 inline text-red-400" /> for Indian gamers.</p>
           </div>
         </div>
       </footer>

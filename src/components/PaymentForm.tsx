@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, User, Mail, MessageCircle, Send, CheckCircle, Gamepad2, ExternalLink, Plus, Minus } from 'lucide-react';
+import { ArrowLeft, User, Mail, MessageCircle, Send, CheckCircle, Gamepad2, ExternalLink, Plus, Minus, Zap, Star, Shield } from 'lucide-react';
 
 interface PaymentFormProps {
   selectedPlan: any;
@@ -37,9 +37,9 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ selectedPlan, selectedAddons,
   };
 
   const calculateTotal = () => {
-    const basePrice = parseInt(selectedPlan.price.replace('₹', ''));
-    const unitsPrice = (localAddons?.units || 0) * parseInt(selectedPlan.addons.unit.replace('₹', ''));
-    const backupsPrice = (localAddons?.backups || 0) * parseInt(selectedPlan.addons.backup.replace('₹', ''));
+    const basePrice = parseInt(selectedPlan.price.replace(/[₹,]/g, '').split('/')[0]);
+    const unitsPrice = (localAddons?.units || 0) * parseInt(selectedPlan.addons.unit.replace(/[₹,]/g, ''));
+    const backupsPrice = (localAddons?.backups || 0) * parseInt(selectedPlan.addons.backup.replace(/[₹,]/g, ''));
     return basePrice + unitsPrice + backupsPrice;
   };
 
@@ -77,6 +77,19 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ selectedPlan, selectedAddons,
 
   const themeStyles = getThemeClasses();
 
+  const getPlanTypeIcon = (planType: string) => {
+    switch (planType) {
+      case 'budget':
+        return <Shield className="w-5 h-5 text-green-400" />;
+      case 'powered':
+        return <Zap className="w-5 h-5 text-orange-400" />;
+      case 'premium':
+        return <Star className="w-5 h-5 text-purple-400" />;
+      default:
+        return <Gamepad2 className="w-5 h-5 text-blue-400" />;
+    }
+  };
+
   const sendToDiscord = async () => {
     const webhookUrl = 'https://discord.com/api/webhooks/1390708963229831180/iIcQEkMPv1_bWKzvg58UWBq-c84msuMit4Sh6aw5xa4HaCYyUgdl3fA82W8g2vZLofsp';
 
@@ -93,7 +106,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ selectedPlan, selectedAddons,
             },
             {
               name: "🎯 Plan Details",
-              value: `**Plan:** ${selectedPlan.name} Plan\n**Type:** ${selectedPlan.planType}\n**RAM:** ${selectedPlan.ram}\n**CPU:** ${selectedPlan.cpu}\n**Storage:** ${selectedPlan.storage}\n**Location:** ${selectedPlan.location}`,
+              value: `**Plan:** ${selectedPlan.name} Plan\n**Type:** ${selectedPlan.planType || 'Standard'}\n**RAM:** ${selectedPlan.ram}\n**CPU:** ${selectedPlan.cpu}\n**Storage:** ${selectedPlan.storage}\n**Location:** ${selectedPlan.location}`,
               inline: true
             },
             {
@@ -103,7 +116,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ selectedPlan, selectedAddons,
             },
             {
               name: "💰 Pricing",
-              value: `**Base Price:** ₹${selectedPlan.price.replace('₹', '')}\n**Add-ons:** ₹${((localAddons?.units || 0) * parseInt(selectedPlan.addons.unit.replace('₹', ''))) + ((localAddons?.backups || 0) * parseInt(selectedPlan.addons.backup.replace('₹', '')))}\n**Total:** ₹${calculateTotal()}`,
+              value: `**Base Price:** ₹${selectedPlan.price.replace(/[₹,]/g, '').split('/')[0]}/month\n**Add-ons:** ₹${((localAddons?.units || 0) * parseInt(selectedPlan.addons.unit.replace(/[₹,]/g, ''))) + ((localAddons?.backups || 0) * parseInt(selectedPlan.addons.backup.replace(/[₹,]/g, '')))}\n**Total:** ₹${calculateTotal()}/month`,
               inline: true
             },
             {
@@ -151,12 +164,12 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ selectedPlan, selectedAddons,
   if (isSubmitted) {
     return (
       <div className={`min-h-screen ${themeStyles.bg} flex items-center justify-center p-4`}>
-        <div className={`max-w-md w-full ${themeStyles.card} rounded-2xl p-8 text-center`}>
-          <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-6">
+        <div className={`max-w-md w-full ${themeStyles.card} rounded-2xl p-6 sm:p-8 text-center`}>
+          <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
             <CheckCircle className="w-8 h-8 text-white" />
           </div>
-          <h2 className={`text-2xl font-bold ${themeStyles.text} mb-4`}>Order Submitted Successfully!</h2>
-          <p className={`${themeStyles.textSecondary} mb-6`}>
+          <h2 className={`text-xl sm:text-2xl font-bold ${themeStyles.text} mb-4`}>Order Submitted Successfully!</h2>
+          <p className={`${themeStyles.textSecondary} mb-6 text-sm sm:text-base`}>
             Your Minecraft hosting order has been received. Our team will contact you on Discord to confirm your order and set up your server.
           </p>
           
@@ -165,20 +178,20 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ selectedPlan, selectedAddons,
               href="https://discord.gg/Qy6tuNJmwJ"
               target="_blank"
               rel="noopener noreferrer"
-              className={`w-full ${themeStyles.button} text-white py-3 px-4 rounded-lg font-semibold transition-all duration-300 flex items-center justify-center mb-4`}
+              className={`w-full ${themeStyles.button} text-white py-3 px-4 rounded-lg font-semibold transition-all duration-300 flex items-center justify-center mb-4 text-sm sm:text-base`}
             >
-              <MessageCircle className="w-5 h-5 mr-2" />
+              <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
               Join Discord Server
-              <ExternalLink className="w-4 h-4 ml-2" />
+              <ExternalLink className="w-3 h-3 sm:w-4 sm:h-4 ml-2" />
             </a>
-            <p className={`text-sm ${themeStyles.textSecondary}`}>
+            <p className={`text-xs sm:text-sm ${themeStyles.textSecondary}`}>
               Join our Discord server to confirm your order and get support from our team.
             </p>
           </div>
 
           <button
             onClick={onBack}
-            className={`w-full ${themeStyles.button} text-white py-3 rounded-lg font-semibold transition-all duration-300`}
+            className={`w-full ${themeStyles.button} text-white py-3 rounded-lg font-semibold transition-all duration-300 text-sm sm:text-base`}
           >
             Back to Plans
           </button>
@@ -188,124 +201,130 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ selectedPlan, selectedAddons,
   }
 
   return (
-    <div className={`min-h-screen ${themeStyles.bg} py-8 px-4 sm:px-6 lg:px-8`}>
-      <div className="max-w-4xl mx-auto">
-        <div className="mb-8">
+    <div className={`min-h-screen ${themeStyles.bg} py-4 sm:py-8 px-4 sm:px-6 lg:px-8`}>
+      <div className="max-w-6xl mx-auto">
+        <div className="mb-6 sm:mb-8">
           <button
             onClick={onBack}
-            className={`flex items-center ${themeStyles.textSecondary} hover:text-purple-400 transition-colors`}
+            className={`flex items-center ${themeStyles.textSecondary} hover:text-purple-400 transition-colors text-sm sm:text-base`}
           >
-            <ArrowLeft className="w-5 h-5 mr-2" />
+            <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
             Back to Plans
           </button>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8">
           {/* Order Summary */}
-          <div className={`${themeStyles.card} rounded-2xl p-6 h-fit`}>
-            <h2 className={`text-2xl font-bold ${themeStyles.text} mb-6`}>Order Summary</h2>
+          <div className={`${themeStyles.card} rounded-2xl p-4 sm:p-6 h-fit order-2 xl:order-1`}>
+            <h2 className={`text-xl sm:text-2xl font-bold ${themeStyles.text} mb-4 sm:mb-6`}>Order Summary</h2>
             
-            <div className="space-y-4 mb-6">
-              <div className={`flex items-center space-x-4 p-4 ${themeStyles.card} rounded-xl`}>
-                <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
-                  <Gamepad2 className="w-6 h-6 text-white" />
+            <div className="space-y-4 mb-4 sm:mb-6">
+              <div className={`flex items-center space-x-3 sm:space-x-4 p-3 sm:p-4 ${themeStyles.card} rounded-xl`}>
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                  {getPlanTypeIcon(selectedPlan.planType)}
                 </div>
-                <div>
-                  <h3 className={`text-lg font-semibold ${themeStyles.text}`}>{selectedPlan.name} Plan</h3>
-                  <p className={themeStyles.textSecondary}>{selectedPlan.planType}</p>
+                <div className="flex-1 min-w-0">
+                  <h3 className={`text-base sm:text-lg font-semibold ${themeStyles.text} truncate`}>{selectedPlan.name} Plan</h3>
+                  <p className={`${themeStyles.textSecondary} text-sm capitalize`}>{selectedPlan.planType || 'Standard'}</p>
                 </div>
-                <div className="ml-auto text-right">
-                  <div className={`text-xl font-bold ${themeStyles.text}`}>{selectedPlan.price}</div>
-                  <div className={`text-sm ${themeStyles.textSecondary}`}>/month</div>
+                <div className="text-right flex-shrink-0">
+                  <div className={`text-lg sm:text-xl font-bold ${themeStyles.text}`}>
+                    ₹{selectedPlan.price.replace(/[₹,]/g, '').split('/')[0]}
+                  </div>
+                  <div className={`text-xs sm:text-sm ${themeStyles.textSecondary}`}>/month</div>
                 </div>
               </div>
 
-              <div className="space-y-2 text-sm">
+              <div className="grid grid-cols-2 gap-2 text-xs sm:text-sm">
                 <div className={`flex justify-between ${themeStyles.textSecondary}`}>
                   <span>RAM:</span>
-                  <span>{selectedPlan.ram}</span>
+                  <span className="font-medium">{selectedPlan.ram}</span>
                 </div>
                 <div className={`flex justify-between ${themeStyles.textSecondary}`}>
                   <span>CPU:</span>
-                  <span>{selectedPlan.cpu}</span>
+                  <span className="font-medium">{selectedPlan.cpu}</span>
                 </div>
                 <div className={`flex justify-between ${themeStyles.textSecondary}`}>
                   <span>Storage:</span>
-                  <span>{selectedPlan.storage}</span>
+                  <span className="font-medium">{selectedPlan.storage}</span>
                 </div>
                 <div className={`flex justify-between ${themeStyles.textSecondary}`}>
                   <span>Location:</span>
-                  <span>{selectedPlan.location}</span>
+                  <span className="font-medium">{selectedPlan.location}</span>
                 </div>
               </div>
             </div>
 
             {/* Add-ons Configuration */}
-            <div className={`border-t ${theme === 'light' ? 'border-gray-200' : 'border-white/20'} pt-6 mb-6`}>
-              <h4 className={`text-lg font-semibold ${themeStyles.text} mb-4`}>Configure Add-ons</h4>
+            <div className={`border-t ${theme === 'light' ? 'border-gray-200' : 'border-white/20'} pt-4 sm:pt-6 mb-4 sm:mb-6`}>
+              <h4 className={`text-base sm:text-lg font-semibold ${themeStyles.text} mb-3 sm:mb-4`}>Configure Add-ons</h4>
               
               {/* Extra Units */}
-              <div className={`${themeStyles.card} p-4 rounded-lg mb-4`}>
-                <div className="flex items-center justify-between mb-3">
-                  <div>
-                    <h5 className={`font-semibold ${themeStyles.text}`}>Extra Units</h5>
-                    <p className={`text-sm ${themeStyles.textSecondary}`}>1 GB RAM + 50% CPU + 5 GB SSD</p>
-                    <p className={`text-sm font-semibold ${themeStyles.text}`}>{selectedPlan.addons.unit}/unit</p>
+              <div className={`${themeStyles.card} p-3 sm:p-4 rounded-lg mb-3 sm:mb-4`}>
+                <div className="flex items-center justify-between mb-2 sm:mb-3">
+                  <div className="flex-1 min-w-0 mr-3">
+                    <h5 className={`font-semibold ${themeStyles.text} text-sm sm:text-base`}>Extra Units</h5>
+                    <p className={`text-xs sm:text-sm ${themeStyles.textSecondary}`}>1 GB RAM + 50% CPU + 5 GB SSD</p>
+                    <p className={`text-xs sm:text-sm font-semibold ${themeStyles.text}`}>
+                      ₹{selectedPlan.addons.unit.replace(/[₹,]/g, '')}/unit
+                    </p>
                   </div>
-                  <div className="flex items-center space-x-3">
+                  <div className="flex items-center space-x-2 sm:space-x-3 flex-shrink-0">
                     <button
                       onClick={() => handleAddonChange('units', (localAddons?.units || 0) - 1)}
-                      className={`w-8 h-8 ${themeStyles.button} text-white rounded-full flex items-center justify-center`}
+                      className={`w-7 h-7 sm:w-8 sm:h-8 ${themeStyles.button} text-white rounded-full flex items-center justify-center text-sm`}
                     >
-                      <Minus className="w-4 h-4" />
+                      <Minus className="w-3 h-3 sm:w-4 sm:h-4" />
                     </button>
-                    <span className={`w-8 text-center font-semibold ${themeStyles.text}`}>
+                    <span className={`w-6 sm:w-8 text-center font-semibold ${themeStyles.text} text-sm sm:text-base`}>
                       {localAddons?.units || 0}
                     </span>
                     <button
                       onClick={() => handleAddonChange('units', (localAddons?.units || 0) + 1)}
-                      className={`w-8 h-8 ${themeStyles.button} text-white rounded-full flex items-center justify-center`}
+                      className={`w-7 h-7 sm:w-8 sm:h-8 ${themeStyles.button} text-white rounded-full flex items-center justify-center text-sm`}
                     >
-                      <Plus className="w-4 h-4" />
+                      <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
                     </button>
                   </div>
                 </div>
                 {(localAddons?.units || 0) > 0 && (
-                  <div className={`text-right text-sm ${themeStyles.textSecondary}`}>
-                    Subtotal: ₹{(localAddons?.units || 0) * parseInt(selectedPlan.addons.unit.replace('₹', ''))}
+                  <div className={`text-right text-xs sm:text-sm ${themeStyles.textSecondary}`}>
+                    Subtotal: ₹{(localAddons?.units || 0) * parseInt(selectedPlan.addons.unit.replace(/[₹,]/g, ''))}
                   </div>
                 )}
               </div>
 
               {/* Backup Slots */}
-              <div className={`${themeStyles.card} p-4 rounded-lg`}>
-                <div className="flex items-center justify-between mb-3">
-                  <div>
-                    <h5 className={`font-semibold ${themeStyles.text}`}>Backup Slots</h5>
-                    <p className={`text-sm ${themeStyles.textSecondary}`}>Additional backup storage</p>
-                    <p className={`text-sm font-semibold ${themeStyles.text}`}>{selectedPlan.addons.backup}/slot</p>
+              <div className={`${themeStyles.card} p-3 sm:p-4 rounded-lg`}>
+                <div className="flex items-center justify-between mb-2 sm:mb-3">
+                  <div className="flex-1 min-w-0 mr-3">
+                    <h5 className={`font-semibold ${themeStyles.text} text-sm sm:text-base`}>Backup Slots</h5>
+                    <p className={`text-xs sm:text-sm ${themeStyles.textSecondary}`}>Additional backup storage</p>
+                    <p className={`text-xs sm:text-sm font-semibold ${themeStyles.text}`}>
+                      ₹{selectedPlan.addons.backup.replace(/[₹,]/g, '')}/slot
+                    </p>
                   </div>
-                  <div className="flex items-center space-x-3">
+                  <div className="flex items-center space-x-2 sm:space-x-3 flex-shrink-0">
                     <button
                       onClick={() => handleAddonChange('backups', (localAddons?.backups || 0) - 1)}
-                      className={`w-8 h-8 ${themeStyles.button} text-white rounded-full flex items-center justify-center`}
+                      className={`w-7 h-7 sm:w-8 sm:h-8 ${themeStyles.button} text-white rounded-full flex items-center justify-center text-sm`}
                     >
-                      <Minus className="w-4 h-4" />
+                      <Minus className="w-3 h-3 sm:w-4 sm:h-4" />
                     </button>
-                    <span className={`w-8 text-center font-semibold ${themeStyles.text}`}>
+                    <span className={`w-6 sm:w-8 text-center font-semibold ${themeStyles.text} text-sm sm:text-base`}>
                       {localAddons?.backups || 0}
                     </span>
                     <button
                       onClick={() => handleAddonChange('backups', (localAddons?.backups || 0) + 1)}
-                      className={`w-8 h-8 ${themeStyles.button} text-white rounded-full flex items-center justify-center`}
+                      className={`w-7 h-7 sm:w-8 sm:h-8 ${themeStyles.button} text-white rounded-full flex items-center justify-center text-sm`}
                     >
-                      <Plus className="w-4 h-4" />
+                      <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
                     </button>
                   </div>
                 </div>
                 {(localAddons?.backups || 0) > 0 && (
-                  <div className={`text-right text-sm ${themeStyles.textSecondary}`}>
-                    Subtotal: ₹{(localAddons?.backups || 0) * parseInt(selectedPlan.addons.backup.replace('₹', ''))}
+                  <div className={`text-right text-xs sm:text-sm ${themeStyles.textSecondary}`}>
+                    Subtotal: ₹{(localAddons?.backups || 0) * parseInt(selectedPlan.addons.backup.replace(/[₹,]/g, ''))}
                   </div>
                 )}
               </div>
@@ -313,21 +332,21 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ selectedPlan, selectedAddons,
 
             <div className={`border-t ${theme === 'light' ? 'border-gray-200' : 'border-white/20'} pt-4`}>
               <div className="flex justify-between items-center">
-                <span className={`text-xl font-bold ${themeStyles.text}`}>Total</span>
-                <span className="text-2xl font-bold text-purple-400">₹{calculateTotal()}/mo</span>
+                <span className={`text-lg sm:text-xl font-bold ${themeStyles.text}`}>Total</span>
+                <span className="text-xl sm:text-2xl font-bold text-purple-400">₹{calculateTotal()}/mo</span>
               </div>
             </div>
           </div>
 
           {/* Order Form */}
-          <div className={`${themeStyles.card} rounded-2xl p-6`}>
-            <h2 className={`text-2xl font-bold ${themeStyles.text} mb-6`}>Customer Information</h2>
+          <div className={`${themeStyles.card} rounded-2xl p-4 sm:p-6 order-1 xl:order-2`}>
+            <h2 className={`text-xl sm:text-2xl font-bold ${themeStyles.text} mb-4 sm:mb-6`}>Customer Information</h2>
             
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className={`block text-sm font-medium ${themeStyles.textSecondary} mb-2`}>
-                    <User className="w-4 h-4 inline mr-2" />
+                  <label className={`block text-xs sm:text-sm font-medium ${themeStyles.textSecondary} mb-2`}>
+                    <User className="w-3 h-3 sm:w-4 sm:h-4 inline mr-2" />
                     First Name *
                   </label>
                   <input
@@ -336,13 +355,13 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ selectedPlan, selectedAddons,
                     value={formData.firstName}
                     onChange={handleInputChange}
                     required
-                    className={`w-full px-4 py-3 ${themeStyles.input} border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500`}
+                    className={`w-full px-3 sm:px-4 py-2 sm:py-3 ${themeStyles.input} border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm sm:text-base`}
                     placeholder="Enter first name"
                   />
                 </div>
                 <div>
-                  <label className={`block text-sm font-medium ${themeStyles.textSecondary} mb-2`}>
-                    <User className="w-4 h-4 inline mr-2" />
+                  <label className={`block text-xs sm:text-sm font-medium ${themeStyles.textSecondary} mb-2`}>
+                    <User className="w-3 h-3 sm:w-4 sm:h-4 inline mr-2" />
                     Last Name *
                   </label>
                   <input
@@ -351,15 +370,15 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ selectedPlan, selectedAddons,
                     value={formData.lastName}
                     onChange={handleInputChange}
                     required
-                    className={`w-full px-4 py-3 ${themeStyles.input} border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500`}
+                    className={`w-full px-3 sm:px-4 py-2 sm:py-3 ${themeStyles.input} border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm sm:text-base`}
                     placeholder="Enter last name"
                   />
                 </div>
               </div>
 
               <div>
-                <label className={`block text-sm font-medium ${themeStyles.textSecondary} mb-2`}>
-                  <Mail className="w-4 h-4 inline mr-2" />
+                <label className={`block text-xs sm:text-sm font-medium ${themeStyles.textSecondary} mb-2`}>
+                  <Mail className="w-3 h-3 sm:w-4 sm:h-4 inline mr-2" />
                   Email Address *
                 </label>
                 <input
@@ -368,14 +387,14 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ selectedPlan, selectedAddons,
                   value={formData.email}
                   onChange={handleInputChange}
                   required
-                  className={`w-full px-4 py-3 ${themeStyles.input} border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500`}
+                  className={`w-full px-3 sm:px-4 py-2 sm:py-3 ${themeStyles.input} border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm sm:text-base`}
                   placeholder="Enter email address"
                 />
               </div>
 
               <div>
-                <label className={`block text-sm font-medium ${themeStyles.textSecondary} mb-2`}>
-                  <MessageCircle className="w-4 h-4 inline mr-2" />
+                <label className={`block text-xs sm:text-sm font-medium ${themeStyles.textSecondary} mb-2`}>
+                  <MessageCircle className="w-3 h-3 sm:w-4 sm:h-4 inline mr-2" />
                   Discord Username *
                 </label>
                 <input
@@ -384,14 +403,14 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ selectedPlan, selectedAddons,
                   value={formData.discordUsername}
                   onChange={handleInputChange}
                   required
-                  className={`w-full px-4 py-3 ${themeStyles.input} border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500`}
+                  className={`w-full px-3 sm:px-4 py-2 sm:py-3 ${themeStyles.input} border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm sm:text-base`}
                   placeholder="Enter Discord username"
                 />
               </div>
 
               <div>
-                <label className={`block text-sm font-medium ${themeStyles.textSecondary} mb-2`}>
-                  <Gamepad2 className="w-4 h-4 inline mr-2" />
+                <label className={`block text-xs sm:text-sm font-medium ${themeStyles.textSecondary} mb-2`}>
+                  <Gamepad2 className="w-3 h-3 sm:w-4 sm:h-4 inline mr-2" />
                   Server Name (Optional)
                 </label>
                 <input
@@ -399,7 +418,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ selectedPlan, selectedAddons,
                   name="serverName"
                   value={formData.serverName}
                   onChange={handleInputChange}
-                  className={`w-full px-4 py-3 ${themeStyles.input} border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500`}
+                  className={`w-full px-3 sm:px-4 py-2 sm:py-3 ${themeStyles.input} border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm sm:text-base`}
                   placeholder="Enter desired server name"
                 />
               </div>
@@ -407,16 +426,16 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ selectedPlan, selectedAddons,
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className={`w-full ${themeStyles.button} disabled:from-gray-500 disabled:to-gray-600 text-white py-4 rounded-lg font-semibold transition-all duration-300 flex items-center justify-center`}
+                className={`w-full ${themeStyles.button} disabled:from-gray-500 disabled:to-gray-600 text-white py-3 sm:py-4 rounded-lg font-semibold transition-all duration-300 flex items-center justify-center text-sm sm:text-base`}
               >
                 {isSubmitting ? (
                   <div className="flex items-center">
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
+                    <div className="animate-spin rounded-full h-4 w-4 sm:h-5 sm:w-5 border-b-2 border-white mr-2 sm:mr-3"></div>
                     Processing Order...
                   </div>
                 ) : (
                   <div className="flex items-center">
-                    <Send className="w-5 h-5 mr-2" />
+                    <Send className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                     Submit Order
                   </div>
                 )}

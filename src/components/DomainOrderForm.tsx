@@ -84,7 +84,7 @@ const DomainOrderForm: React.FC<DomainOrderFormProps> = ({ selectedDomain, onBac
             },
             {
               name: "🌐 Domain Details",
-              value: `**Domain:** ${selectedDomain.domain}${selectedDomain.tld}\n**Extension:** ${selectedDomain.tld}\n**Price:** ${selectedDomain.price}/year`,
+              value: `**Domain:** ${selectedDomain.domain}${selectedDomain.tld}\n**Extension:** ${selectedDomain.tld}\n**Price:** ${selectedDomain.price.replace(/\/year.*/, '/year')}\n**Type:** Domain Registration`,
               inline: false
             }
           ],
@@ -127,12 +127,12 @@ const DomainOrderForm: React.FC<DomainOrderFormProps> = ({ selectedDomain, onBac
   if (isSubmitted) {
     return (
       <div className={`min-h-screen ${themeStyles.bg} flex items-center justify-center p-4`}>
-        <div className={`max-w-md w-full ${themeStyles.card} rounded-2xl p-8 text-center`}>
-          <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-6">
+        <div className={`max-w-md w-full ${themeStyles.card} rounded-2xl p-6 sm:p-8 text-center`}>
+          <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
             <CheckCircle className="w-8 h-8 text-white" />
           </div>
-          <h2 className={`text-2xl font-bold ${themeStyles.text} mb-4`}>Domain Order Submitted!</h2>
-          <p className={`${themeStyles.textSecondary} mb-6`}>
+          <h2 className={`text-xl sm:text-2xl font-bold ${themeStyles.text} mb-4`}>Domain Order Submitted!</h2>
+          <p className={`${themeStyles.textSecondary} mb-6 text-sm sm:text-base`}>
             Your domain registration request has been received. Our team will contact you on Discord to confirm your order and complete the registration process.
           </p>
           
@@ -141,20 +141,20 @@ const DomainOrderForm: React.FC<DomainOrderFormProps> = ({ selectedDomain, onBac
               href="https://discord.gg/Qy6tuNJmwJ"
               target="_blank"
               rel="noopener noreferrer"
-              className={`w-full ${themeStyles.button} text-white py-3 px-4 rounded-lg font-semibold transition-all duration-300 flex items-center justify-center mb-4`}
+              className={`w-full ${themeStyles.button} text-white py-3 px-4 rounded-lg font-semibold transition-all duration-300 flex items-center justify-center mb-4 text-sm sm:text-base`}
             >
-              <MessageCircle className="w-5 h-5 mr-2" />
+              <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
               Join Discord Server
-              <ExternalLink className="w-4 h-4 ml-2" />
+              <ExternalLink className="w-3 h-3 sm:w-4 sm:h-4 ml-2" />
             </a>
-            <p className={`text-sm ${themeStyles.textSecondary}`}>
+            <p className={`text-xs sm:text-sm ${themeStyles.textSecondary}`}>
               Join our Discord server to confirm your order and get support from our team.
             </p>
           </div>
 
           <button
             onClick={onBack}
-            className={`w-full ${themeStyles.button} text-white py-3 rounded-lg font-semibold transition-all duration-300`}
+            className={`w-full ${themeStyles.button} text-white py-3 rounded-lg font-semibold transition-all duration-300 text-sm sm:text-base`}
           >
             Back to Domains
           </button>
@@ -164,40 +164,42 @@ const DomainOrderForm: React.FC<DomainOrderFormProps> = ({ selectedDomain, onBac
   }
 
   return (
-    <div className={`min-h-screen ${themeStyles.bg} py-8 px-4 sm:px-6 lg:px-8`}>
-      <div className="max-w-4xl mx-auto">
-        <div className="mb-8">
+    <div className={`min-h-screen ${themeStyles.bg} py-4 sm:py-8 px-4 sm:px-6 lg:px-8`}>
+      <div className="max-w-6xl mx-auto">
+        <div className="mb-6 sm:mb-8">
           <button
             onClick={onBack}
-            className={`flex items-center ${themeStyles.textSecondary} hover:text-purple-400 transition-colors`}
+            className={`flex items-center ${themeStyles.textSecondary} hover:text-purple-400 transition-colors text-sm sm:text-base`}
           >
-            <ArrowLeft className="w-5 h-5 mr-2" />
+            <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
             Back to Domain Search
           </button>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8">
           {/* Domain Summary */}
-          <div className={`${themeStyles.card} rounded-2xl p-6 h-fit`}>
-            <h2 className={`text-2xl font-bold ${themeStyles.text} mb-6`}>Domain Summary</h2>
+          <div className={`${themeStyles.card} rounded-2xl p-4 sm:p-6 h-fit order-2 xl:order-1`}>
+            <h2 className={`text-xl sm:text-2xl font-bold ${themeStyles.text} mb-4 sm:mb-6`}>Domain Summary</h2>
             
-            <div className="space-y-4 mb-6">
-              <div className={`flex items-center space-x-4 p-4 ${themeStyles.card} rounded-xl`}>
-                <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
-                  <Globe className="w-6 h-6 text-white" />
+            <div className="space-y-4 mb-4 sm:mb-6">
+              <div className={`flex items-center space-x-3 sm:space-x-4 p-3 sm:p-4 ${themeStyles.card} rounded-xl`}>
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center flex-shrink-0 animate-pulse">
+                  <Globe className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                 </div>
-                <div className="flex-1">
-                  <h3 className={`text-lg font-semibold ${themeStyles.text}`}>{selectedDomain.domain}{selectedDomain.tld}</h3>
-                  <p className={themeStyles.textSecondary}>Domain Registration</p>
+                <div className="flex-1 min-w-0">
+                  <h3 className={`text-base sm:text-lg font-semibold ${themeStyles.text} truncate`}>{selectedDomain.domain}{selectedDomain.tld}</h3>
+                  <p className={`${themeStyles.textSecondary} text-sm`}>Domain Registration</p>
                 </div>
-                <div className="text-right">
-                  <div className={`text-xl font-bold ${themeStyles.text}`}>{selectedDomain.price}</div>
-                  <div className={`text-sm ${themeStyles.textSecondary}`}>/year</div>
+                <div className="text-right flex-shrink-0">
+                  <div className={`text-lg sm:text-xl font-bold ${themeStyles.text}`}>
+                    {selectedDomain.price.replace(/\/year.*/, '')}
+                  </div>
+                  <div className={`text-xs sm:text-sm ${themeStyles.textSecondary}`}>/year</div>
                 </div>
               </div>
             </div>
 
-            <div className="space-y-3 text-sm mb-6">
+            <div className="space-y-2 sm:space-y-3 text-xs sm:text-sm mb-4 sm:mb-6">
               <div className={`flex justify-between ${themeStyles.textSecondary}`}>
                 <span>Domain:</span>
                 <span className="font-semibold">{selectedDomain.domain}{selectedDomain.tld}</span>
@@ -218,14 +220,16 @@ const DomainOrderForm: React.FC<DomainOrderFormProps> = ({ selectedDomain, onBac
 
             <div className={`border-t ${theme === 'light' ? 'border-gray-200' : 'border-white/20'} pt-4`}>
               <div className="flex justify-between items-center">
-                <span className={`text-xl font-bold ${themeStyles.text}`}>Total</span>
-                <span className="text-2xl font-bold text-purple-400">{selectedDomain.price}/year</span>
+                <span className={`text-lg sm:text-xl font-bold ${themeStyles.text}`}>Total</span>
+                <span className="text-xl sm:text-2xl font-bold text-purple-400">
+                  {selectedDomain.price.replace(/\/year.*/, '/year')}
+                </span>
               </div>
             </div>
 
-            <div className={`mt-6 p-4 ${theme === 'light' ? 'bg-blue-50 border-blue-200' : 'bg-blue-500/20 border-blue-500/30'} rounded-xl border`}>
-              <h4 className={`${theme === 'light' ? 'text-blue-800' : 'text-blue-300'} font-semibold mb-2`}>What's Included:</h4>
-              <ul className={`text-sm ${theme === 'light' ? 'text-blue-700' : 'text-blue-200'} space-y-1`}>
+            <div className={`mt-4 sm:mt-6 p-3 sm:p-4 ${theme === 'light' ? 'bg-blue-50 border-blue-200' : 'bg-blue-500/20 border-blue-500/30'} rounded-xl border`}>
+              <h4 className={`${theme === 'light' ? 'text-blue-800' : 'text-blue-300'} font-semibold mb-2 text-sm sm:text-base`}>What's Included:</h4>
+              <ul className={`text-xs sm:text-sm ${theme === 'light' ? 'text-blue-700' : 'text-blue-200'} space-y-1`}>
                 <li>• Free DNS Management</li>
                 <li>• Domain Privacy Protection</li>
                 <li>• 24/7 Support</li>
@@ -236,14 +240,14 @@ const DomainOrderForm: React.FC<DomainOrderFormProps> = ({ selectedDomain, onBac
           </div>
 
           {/* Registration Form */}
-          <div className={`${themeStyles.card} rounded-2xl p-6`}>
-            <h2 className={`text-2xl font-bold ${themeStyles.text} mb-6`}>Registration Information</h2>
+          <div className={`${themeStyles.card} rounded-2xl p-4 sm:p-6 order-1 xl:order-2`}>
+            <h2 className={`text-xl sm:text-2xl font-bold ${themeStyles.text} mb-4 sm:mb-6`}>Registration Information</h2>
             
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className={`block text-sm font-medium ${themeStyles.textSecondary} mb-2`}>
-                    <User className="w-4 h-4 inline mr-2" />
+                  <label className={`block text-xs sm:text-sm font-medium ${themeStyles.textSecondary} mb-2`}>
+                    <User className="w-3 h-3 sm:w-4 sm:h-4 inline mr-2" />
                     First Name *
                   </label>
                   <input
@@ -252,13 +256,13 @@ const DomainOrderForm: React.FC<DomainOrderFormProps> = ({ selectedDomain, onBac
                     value={formData.firstName}
                     onChange={handleInputChange}
                     required
-                    className={`w-full px-4 py-3 ${themeStyles.input} border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500`}
+                    className={`w-full px-3 sm:px-4 py-2 sm:py-3 ${themeStyles.input} border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm sm:text-base`}
                     placeholder="Enter first name"
                   />
                 </div>
                 <div>
-                  <label className={`block text-sm font-medium ${themeStyles.textSecondary} mb-2`}>
-                    <User className="w-4 h-4 inline mr-2" />
+                  <label className={`block text-xs sm:text-sm font-medium ${themeStyles.textSecondary} mb-2`}>
+                    <User className="w-3 h-3 sm:w-4 sm:h-4 inline mr-2" />
                     Last Name *
                   </label>
                   <input
@@ -267,15 +271,15 @@ const DomainOrderForm: React.FC<DomainOrderFormProps> = ({ selectedDomain, onBac
                     value={formData.lastName}
                     onChange={handleInputChange}
                     required
-                    className={`w-full px-4 py-3 ${themeStyles.input} border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500`}
+                    className={`w-full px-3 sm:px-4 py-2 sm:py-3 ${themeStyles.input} border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm sm:text-base`}
                     placeholder="Enter last name"
                   />
                 </div>
               </div>
 
               <div>
-                <label className={`block text-sm font-medium ${themeStyles.textSecondary} mb-2`}>
-                  <Mail className="w-4 h-4 inline mr-2" />
+                <label className={`block text-xs sm:text-sm font-medium ${themeStyles.textSecondary} mb-2`}>
+                  <Mail className="w-3 h-3 sm:w-4 sm:h-4 inline mr-2" />
                   Email Address *
                 </label>
                 <input
@@ -284,14 +288,14 @@ const DomainOrderForm: React.FC<DomainOrderFormProps> = ({ selectedDomain, onBac
                   value={formData.email}
                   onChange={handleInputChange}
                   required
-                  className={`w-full px-4 py-3 ${themeStyles.input} border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500`}
+                  className={`w-full px-3 sm:px-4 py-2 sm:py-3 ${themeStyles.input} border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm sm:text-base`}
                   placeholder="Enter email address"
                 />
               </div>
 
               <div>
-                <label className={`block text-sm font-medium ${themeStyles.textSecondary} mb-2`}>
-                  <MessageCircle className="w-4 h-4 inline mr-2" />
+                <label className={`block text-xs sm:text-sm font-medium ${themeStyles.textSecondary} mb-2`}>
+                  <MessageCircle className="w-3 h-3 sm:w-4 sm:h-4 inline mr-2" />
                   Discord Username *
                 </label>
                 <input
@@ -300,14 +304,14 @@ const DomainOrderForm: React.FC<DomainOrderFormProps> = ({ selectedDomain, onBac
                   value={formData.discordUsername}
                   onChange={handleInputChange}
                   required
-                  className={`w-full px-4 py-3 ${themeStyles.input} border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500`}
+                  className={`w-full px-3 sm:px-4 py-2 sm:py-3 ${themeStyles.input} border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm sm:text-base`}
                   placeholder="Enter Discord username"
                 />
               </div>
 
               <div>
-                <label className={`block text-sm font-medium ${themeStyles.textSecondary} mb-2`}>
-                  <MapPin className="w-4 h-4 inline mr-2" />
+                <label className={`block text-xs sm:text-sm font-medium ${themeStyles.textSecondary} mb-2`}>
+                  <MapPin className="w-3 h-3 sm:w-4 sm:h-4 inline mr-2" />
                   Street Address *
                 </label>
                 <input
@@ -316,40 +320,40 @@ const DomainOrderForm: React.FC<DomainOrderFormProps> = ({ selectedDomain, onBac
                   value={formData.address}
                   onChange={handleInputChange}
                   required
-                  className={`w-full px-4 py-3 ${themeStyles.input} border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500`}
+                  className={`w-full px-3 sm:px-4 py-2 sm:py-3 ${themeStyles.input} border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm sm:text-base`}
                   placeholder="Enter street address"
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className={`block text-sm font-medium ${themeStyles.textSecondary} mb-2`}>State *</label>
+                  <label className={`block text-xs sm:text-sm font-medium ${themeStyles.textSecondary} mb-2`}>State *</label>
                   <input
                     type="text"
                     name="state"
                     value={formData.state}
                     onChange={handleInputChange}
                     required
-                    className={`w-full px-4 py-3 ${themeStyles.input} border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500`}
+                    className={`w-full px-3 sm:px-4 py-2 sm:py-3 ${themeStyles.input} border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm sm:text-base`}
                     placeholder="Enter state"
                   />
                 </div>
                 <div>
-                  <label className={`block text-sm font-medium ${themeStyles.textSecondary} mb-2`}>Country *</label>
+                  <label className={`block text-xs sm:text-sm font-medium ${themeStyles.textSecondary} mb-2`}>Country *</label>
                   <input
                     type="text"
                     name="country"
                     value={formData.country}
                     onChange={handleInputChange}
                     required
-                    className={`w-full px-4 py-3 ${themeStyles.input} border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500`}
+                    className={`w-full px-3 sm:px-4 py-2 sm:py-3 ${themeStyles.input} border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm sm:text-base`}
                     placeholder="Enter country"
                   />
                 </div>
               </div>
 
-              <div className={`p-4 ${theme === 'light' ? 'bg-yellow-50 border-yellow-200' : 'bg-yellow-500/20 border-yellow-500/30'} rounded-xl border`}>
-                <p className={`${theme === 'light' ? 'text-yellow-800' : 'text-yellow-200'} text-sm`}>
+              <div className={`p-3 sm:p-4 ${theme === 'light' ? 'bg-yellow-50 border-yellow-200' : 'bg-yellow-500/20 border-yellow-500/30'} rounded-xl border`}>
+                <p className={`${theme === 'light' ? 'text-yellow-800' : 'text-yellow-200'} text-xs sm:text-sm`}>
                   <strong>Note:</strong> Domain registration requires verification of contact information. 
                   Please ensure all details are accurate to avoid delays in the registration process.
                 </p>
@@ -358,16 +362,16 @@ const DomainOrderForm: React.FC<DomainOrderFormProps> = ({ selectedDomain, onBac
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className={`w-full ${themeStyles.button} disabled:from-gray-500 disabled:to-gray-600 text-white py-4 rounded-lg font-semibold transition-all duration-300 flex items-center justify-center`}
+                className={`w-full ${themeStyles.button} disabled:from-gray-500 disabled:to-gray-600 text-white py-3 sm:py-4 rounded-lg font-semibold transition-all duration-300 flex items-center justify-center text-sm sm:text-base`}
               >
                 {isSubmitting ? (
                   <div className="flex items-center">
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
+                    <div className="animate-spin rounded-full h-4 w-4 sm:h-5 sm:w-5 border-b-2 border-white mr-2 sm:mr-3"></div>
                     Processing Registration...
                   </div>
                 ) : (
                   <div className="flex items-center">
-                    <Send className="w-5 h-5 mr-2" />
+                    <Send className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                     Register Domain
                   </div>
                 )}
