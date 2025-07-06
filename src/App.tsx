@@ -700,7 +700,8 @@ function App() {
             </div>
           </div>
           <div className={`border-t border-white/10 mt-6 sm:mt-8 pt-6 sm:pt-8 text-center ${themeStyles.textSecondary} text-xs sm:text-sm`}>
-            <p>&copy; 2024 Demon Node™. All rights reserved. Made with <Heart className="w-3 h-3 sm:w-4 sm:h-4 inline text-red-400" /> for Indian gamers.</p>
+            <p>&copy; 2024 Demon Node™. All rights reserved. Made with <Heart className="w-3 h-3 sm:w-4 sm:h-4 inline text-red-400" /> for Indian Gamers.</p>
+            <p class="text-sm">PoweredBy JXFR</p>
           </div>
         </div>
       </footer>
