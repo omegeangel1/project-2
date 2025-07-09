@@ -44,6 +44,11 @@ import AdminPage from './components/AdminPage';
 import { authManager, type AuthState } from './utils/auth';
 import { superDatabase } from './utils/database';
 
+// Get special offers for display
+const getSpecialOffers = () => {
+  return superDatabase.getActiveSpecialOffers();
+};
+
 function App() {
   const [currentView, setCurrentView] = useState('home');
   const [selectedPlan, setSelectedPlan] = useState(null);
@@ -56,6 +61,7 @@ function App() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [authState, setAuthState] = useState<AuthState>(authManager.getAuthState());
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
+  const [specialOffers, setSpecialOffers] = useState<any[]>([]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -79,6 +85,18 @@ function App() {
       }
     }
   }, [authState]);
+
+  // Load special offers
+  useEffect(() => {
+    const loadOffers = () => {
+      setSpecialOffers(getSpecialOffers());
+    };
+    
+    loadOffers();
+    // Refresh offers every 30 seconds
+    const interval = setInterval(loadOffers, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   const domainExtensions = [
     { tld: '.com', price: '₹999' },
@@ -782,6 +800,22 @@ function App() {
             <p className={`text-lg sm:text-xl ${themeStyles.textSecondary} mb-8 sm:mb-10 leading-relaxed`}>
               Join thousands of satisfied customers who trust Demon Node™ for their digital needs.
             </p>
+            {/* Special Offers Banner */}
+            {specialOffers.length > 0 && (
+              <div className="w-full mb-8">
+                <div className="bg-gradient-to-r from-red-500 to-pink-500 text-white p-4 rounded-xl text-center animate-pulse">
+                  <h3 className="text-lg font-bold mb-2">🔥 Special Offers Available!</h3>
+                  <div className="flex flex-wrap justify-center gap-4">
+                    {specialOffers.slice(0, 3).map((offer, index) => (
+                      <div key={index} className="bg-white/20 px-3 py-1 rounded-full text-sm">
+                        {offer.planName}: <span className="line-through">{offer.originalPrice}</span> → <span className="font-bold">{offer.discountPrice}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+            
             <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center">
               <button 
                 onClick={() => setCurrentView('domains')}
