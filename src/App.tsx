@@ -37,6 +37,9 @@ import DomainPage from './components/DomainPage';
 import HostingPage from './components/HostingPage';
 import VPSPage from './components/VPSPage';
 import VPSOrderForm from './components/VPSOrderForm';
+import DiscordLogin from './components/DiscordLogin';
+import UserProfile from './components/UserProfile';
+import { authManager, type AuthState } from './utils/auth';
 
 function App() {
   const [currentView, setCurrentView] = useState('home');
@@ -48,6 +51,7 @@ function App() {
   const [theme, setTheme] = useState('dark');
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [authState, setAuthState] = useState<AuthState>(authManager.getAuthState());
 
   useEffect(() => {
     const handleScroll = () => {
@@ -55,6 +59,11 @@ function App() {
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  useEffect(() => {
+    const unsubscribe = authManager.subscribe(setAuthState);
+    return unsubscribe;
   }, []);
 
   const domainExtensions = [
@@ -69,6 +78,12 @@ function App() {
   ];
 
   const handlePlanSelect = (plan) => {
+    // Check if user is authenticated before allowing checkout
+    if (!authState.isAuthenticated) {
+      setCurrentView('login');
+      return;
+    }
+    
     setSelectedPlan(plan);
     setSelectedAddons({ units: 0, backups: 0 });
     if (currentView === 'hosting') {
@@ -92,6 +107,12 @@ function App() {
   };
 
   const handleDomainSelect = (domain) => {
+    // Check if user is authenticated before allowing checkout
+    if (!authState.isAuthenticated) {
+      setCurrentView('login');
+      return;
+    }
+    
     setSelectedDomain(domain);
     setCurrentView('domain-checkout');
   };
@@ -138,6 +159,23 @@ function App() {
   };
 
   const themeStyles = getThemeClasses();
+
+  // Show login page if not authenticated and trying to access protected routes
+  if (currentView === 'login' || (!authState.isAuthenticated && ['checkout', 'domain-checkout', 'vps-checkout'].includes(currentView))) {
+    return <DiscordLogin 
+      theme={theme} 
+      onThemeChange={setTheme}
+      onLoginSuccess={() => setCurrentView('home')}
+    />;
+  }
+
+  if (currentView === 'profile') {
+    return <UserProfile 
+      theme={theme}
+      onBack={() => setCurrentView('home')}
+      onLogout={() => setCurrentView('home')}
+    />;
+  }
 
   const ThemeToggle = () => (
     <div className="flex items-center space-x-2">
@@ -269,6 +307,34 @@ function App() {
                 Discord
                 <ExternalLink className="w-3 h-3 ml-1" />
               </a>
+              
+              {/* Auth Section */}
+              {authState.isAuthenticated ? (
+                <div className="flex items-center space-x-4">
+                  <button
+                    onClick={() => setCurrentView('profile')}
+                    className="flex items-center space-x-2 hover:text-purple-400 transition-colors"
+                  >
+                    <img 
+                      src={authManager.getAvatarUrl()} 
+                      alt="Avatar" 
+                      className="w-8 h-8 rounded-full border-2 border-purple-500"
+                    />
+                    <span className={`${themeStyles.textSecondary} font-medium`}>
+                      {authManager.getFirstName() || authState.user?.username}
+                    </span>
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setCurrentView('login')}
+                  className={`${themeStyles.button} text-white px-4 py-2 rounded-lg font-semibold transition-all duration-300 flex items-center space-x-2`}
+                >
+                  <MessageCircle className="w-4 h-4" />
+                  <span>Login</span>
+                </button>
+              )}
+              
               <ThemeToggle />
             </nav>
 
@@ -339,6 +405,37 @@ function App() {
                   Discord
                   <ExternalLink className="w-3 h-3 ml-1" />
                 </a>
+                
+                {/* Mobile Auth Section */}
+                {authState.isAuthenticated ? (
+                  <button
+                    onClick={() => {
+                      setCurrentView('profile');
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="flex items-center space-x-2 hover:text-purple-400 transition-colors text-left"
+                  >
+                    <img 
+                      src={authManager.getAvatarUrl()} 
+                      alt="Avatar" 
+                      className="w-6 h-6 rounded-full border-2 border-purple-500"
+                    />
+                    <span className={`${themeStyles.textSecondary} font-medium`}>
+                      Profile
+                    </span>
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => {
+                      setCurrentView('login');
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className={`${themeStyles.textSecondary} hover:text-purple-400 transition-colors font-medium flex items-center text-left`}
+                  >
+                    <MessageCircle className="w-4 h-4 mr-1" />
+                    Login with Discord
+                  </button>
+                )}
               </nav>
             </div>
           )}
@@ -388,6 +485,22 @@ function App() {
               <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2 sm:ml-3 group-hover:translate-x-1 transition-transform" />
             </button>
           </div>
+          
+          {/* Login Prompt for Non-Authenticated Users */}
+          {!authState.isAuthenticated && (
+            <div className={`mt-8 ${themeStyles.card} p-4 rounded-xl border max-w-md mx-auto`}>
+              <p className={`text-center ${themeStyles.textSecondary} text-sm mb-3`}>
+                🔐 Login with Discord to place orders and access all features
+              </p>
+              <button
+                onClick={() => setCurrentView('login')}
+                className={`w-full ${themeStyles.button} text-white py-2 rounded-lg font-semibold transition-all duration-300 flex items-center justify-center space-x-2 text-sm`}
+              >
+                <MessageCircle className="w-4 h-4" />
+                <span>Login with Discord</span>
+              </button>
+            </div>
+          )}
         </div>
       </section>
 

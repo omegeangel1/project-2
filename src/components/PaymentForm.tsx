@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ArrowLeft, User, Mail, MessageCircle, Send, CheckCircle, Gamepad2, ExternalLink, Plus, Minus, Zap, Star, Shield, Copy } from 'lucide-react';
+import { authManager, type AuthState } from '../utils/auth';
 
 interface PaymentFormProps {
   selectedPlan: any;
@@ -9,11 +10,12 @@ interface PaymentFormProps {
 }
 
 const PaymentForm: React.FC<PaymentFormProps> = ({ selectedPlan, selectedAddons, onBack, theme }) => {
+  const [authState, setAuthState] = useState<AuthState>(authManager.getAuthState());
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    discordUsername: '',
+    firstName: authManager.getFirstName(),
+    lastName: authManager.getLastName(),
+    email: authManager.getEmail(),
+    discordUsername: authManager.getDiscordUsername(),
     serverName: ''
   });
 
@@ -38,6 +40,17 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ selectedPlan, selectedAddons,
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
+    
+    // Prevent editing Discord username if user is logged in
+    if (name === 'discordUsername' && authState.isAuthenticated) {
+      return;
+    }
+    
+    // Prevent editing email if user is logged in
+    if (name === 'email' && authState.isAuthenticated) {
+      return;
+    }
+    
     setFormData(prev => ({
       ...prev,
       [name]: value
@@ -398,6 +411,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ selectedPlan, selectedAddons,
                     required
                     className={`w-full px-3 sm:px-4 py-2 sm:py-3 ${themeStyles.input} border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm sm:text-base`}
                     placeholder="Enter first name"
+                    readOnly={authState.isAuthenticated && !!authManager.getFirstName()}
                   />
                 </div>
                 <div>
@@ -413,6 +427,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ selectedPlan, selectedAddons,
                     required
                     className={`w-full px-3 sm:px-4 py-2 sm:py-3 ${themeStyles.input} border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm sm:text-base`}
                     placeholder="Enter last name"
+                    readOnly={authState.isAuthenticated && !!authManager.getLastName()}
                   />
                 </div>
               </div>
@@ -428,8 +443,9 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ selectedPlan, selectedAddons,
                   value={formData.email}
                   onChange={handleInputChange}
                   required
-                  className={`w-full px-3 sm:px-4 py-2 sm:py-3 ${themeStyles.input} border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm sm:text-base`}
+                  className={`w-full px-3 sm:px-4 py-2 sm:py-3 ${themeStyles.input} border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm sm:text-base ${authState.isAuthenticated ? 'opacity-75 cursor-not-allowed' : ''}`}
                   placeholder="Enter email address"
+                  readOnly={authState.isAuthenticated}
                 />
               </div>
 
@@ -444,9 +460,16 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ selectedPlan, selectedAddons,
                   value={formData.discordUsername}
                   onChange={handleInputChange}
                   required
-                  className={`w-full px-3 sm:px-4 py-2 sm:py-3 ${themeStyles.input} border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm sm:text-base`}
+                  className={`w-full px-3 sm:px-4 py-2 sm:py-3 ${themeStyles.input} border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm sm:text-base ${authState.isAuthenticated ? 'opacity-75 cursor-not-allowed font-mono' : ''}`}
                   placeholder="Enter Discord username"
+                  readOnly={authState.isAuthenticated}
                 />
+                {authState.isAuthenticated && (
+                  <p className={`text-xs ${themeStyles.textMuted} mt-1 flex items-center`}>
+                    <CheckCircle className="w-3 h-3 mr-1 text-green-400" />
+                    Auto-filled from Discord login
+                  </p>
+                )}
               </div>
 
               <div>
