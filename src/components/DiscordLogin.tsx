@@ -18,7 +18,7 @@ const DiscordLogin: React.FC<DiscordLoginProps> = ({
   const [authState, setAuthState] = useState<AuthState>(authManager.getAuthState());
 
   const CLIENT_ID = '1090917458346524734';
-  const REDIRECT_URI = window.location.origin + '/auth/callback';
+  const REDIRECT_URI = window.location.origin;
   const DISCORD_OAUTH_URL = `https://discord.com/api/oauth2/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code&scope=identify%20email`;
 
   useEffect(() => {
