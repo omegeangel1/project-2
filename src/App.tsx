@@ -39,7 +39,10 @@ import VPSPage from './components/VPSPage';
 import VPSOrderForm from './components/VPSOrderForm';
 import DiscordLogin from './components/DiscordLogin';
 import UserProfile from './components/UserProfile';
+import AdminLogin from './components/AdminLogin';
+import AdminPage from './components/AdminPage';
 import { authManager, type AuthState } from './utils/auth';
+import { superDatabase } from './utils/database';
 
 function App() {
   const [currentView, setCurrentView] = useState('home');
@@ -52,6 +55,7 @@ function App() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [authState, setAuthState] = useState<AuthState>(authManager.getAuthState());
+  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -65,6 +69,16 @@ function App() {
     const unsubscribe = authManager.subscribe(setAuthState);
     return unsubscribe;
   }, []);
+
+  // Initialize user in database when authenticated
+  useEffect(() => {
+    if (authState.isAuthenticated && authState.user) {
+      let user = superDatabase.getUserByDiscordId(authState.user.id);
+      if (!user) {
+        user = superDatabase.createUser(authState.user);
+      }
+    }
+  }, [authState]);
 
   const domainExtensions = [
     { tld: '.com', price: '₹999' },
@@ -174,6 +188,27 @@ function App() {
       theme={theme}
       onBack={() => setCurrentView('home')}
       onLogout={() => setCurrentView('home')}
+    />;
+  }
+
+  if (currentView === 'admin-login') {
+    return <AdminLogin 
+      theme={theme}
+      onLoginSuccess={() => {
+        setIsAdminAuthenticated(true);
+        setCurrentView('admin');
+      }}
+      onBack={() => setCurrentView('home')}
+    />;
+  }
+
+  if (currentView === 'admin' && isAdminAuthenticated) {
+    return <AdminPage 
+      theme={theme}
+      onBack={() => {
+        setCurrentView('home');
+        setIsAdminAuthenticated(false);
+      }}
     />;
   }
 
@@ -297,6 +332,12 @@ function App() {
               >
                 VPS
               </button>
+              <button 
+                onClick={() => setCurrentView('admin-login')}
+                className={`${themeStyles.textSecondary} hover:text-red-400 transition-colors font-medium`}
+              >
+                Admin
+              </button>
               <a 
                 href="https://discord.gg/Qy6tuNJmwJ" 
                 target="_blank" 
@@ -393,6 +434,15 @@ function App() {
                   className={`${currentView === 'vps' ? 'text-purple-400' : themeStyles.textSecondary} hover:text-purple-400 transition-colors font-medium text-left`}
                 >
                   VPS
+                </button>
+                <button 
+                  onClick={() => {
+                    setCurrentView('admin-login');
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className={`${themeStyles.textSecondary} hover:text-red-400 transition-colors font-medium text-left`}
+                >
+                  Admin
                 </button>
                 <a 
                   href="https://discord.gg/Qy6tuNJmwJ" 

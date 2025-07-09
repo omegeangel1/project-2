@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ArrowLeft, User, Mail, MessageCircle, Send, CheckCircle, Gamepad2, ExternalLink, Plus, Minus, Zap, Star, Shield, Copy } from 'lucide-react';
 import { authManager, type AuthState } from '../utils/auth';
+import { superDatabase } from '../utils/database';
 
 interface PaymentFormProps {
   selectedPlan: any;
@@ -24,6 +25,9 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ selectedPlan, selectedAddons,
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [orderId, setOrderId] = useState('');
   const [copied, setCopied] = useState(false);
+  const [couponCode, setCouponCode] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
+  const [couponError, setCouponError] = useState('');
 
   const generateOrderId = () => {
     const prefix = 'MC';
@@ -64,11 +68,40 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ selectedPlan, selectedAddons,
     }));
   };
 
+  const handleApplyCoupon = () => {
+    if (!couponCode.trim()) return;
+    
+    const coupon = superDatabase.validateCoupon(couponCode.trim().toUpperCase());
+    if (coupon) {
+      setAppliedCoupon(coupon);
+      setCouponError('');
+    } else {
+      setCouponError('Invalid or expired coupon code');
+      setAppliedCoupon(null);
+    }
+  };
+
+  const removeCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponCode('');
+    setCouponError('');
+  };
+
   const calculateTotal = () => {
     const basePrice = parseInt(selectedPlan.price.replace(/[₹,]/g, '').split('/')[0]);
     const unitsPrice = (localAddons?.units || 0) * parseInt(selectedPlan.addons.unit.replace(/[₹,]/g, ''));
     const backupsPrice = (localAddons?.backups || 0) * parseInt(selectedPlan.addons.backup.replace(/[₹,]/g, ''));
-    return basePrice + unitsPrice + backupsPrice;
+    let total = basePrice + unitsPrice + backupsPrice;
+    
+    if (appliedCoupon) {
+      if (appliedCoupon.discountType === 'percentage') {
+        total = total - (total * appliedCoupon.discountValue / 100);
+      } else {
+        total = Math.max(0, total - appliedCoupon.discountValue);
+      }
+    }
+    
+    return Math.round(total);
   };
 
   const getThemeClasses = () => {
@@ -192,6 +225,28 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ selectedPlan, selectedAddons,
     const generatedOrderId = generateOrderId();
     setOrderId(generatedOrderId);
     await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    // Use coupon if applied
+    if (appliedCoupon) {
+      superDatabase.useCoupon(appliedCoupon.code);
+    }
+    
+    // Create order in database
+    if (authState.isAuthenticated && authState.user) {
+      const user = superDatabase.getUserByDiscordId(authState.user.id);
+      if (user) {
+        superDatabase.createOrder({
+          userId: user.id,
+          type: 'minecraft',
+          planName: selectedPlan.name,
+          price: `₹${calculateTotal()}/mo`,
+          status: 'pending',
+          customerInfo: formData,
+          orderId: generatedOrderId
+        });
+      }
+    }
+    
     await sendToDiscord(generatedOrderId);
     setIsSubmitting(false);
   };
@@ -385,9 +440,58 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ selectedPlan, selectedAddons,
             </div>
 
             <div className={`border-t ${theme === 'light' ? 'border-gray-200' : 'border-white/20'} pt-4`}>
+              {/* Coupon Section */}
+              <div className="mb-4">
+                <h4 className={`text-sm font-semibold ${themeStyles.text} mb-3`}>Coupon Code</h4>
+                {!appliedCoupon ? (
+                  <div className="flex space-x-2">
+                    <input
+                      type="text"
+                      placeholder="Enter coupon code"
+                      value={couponCode}
+                      onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                      className={`flex-1 px-3 py-2 ${themeStyles.input} border rounded-lg text-sm`}
+                    />
+                    <button
+                      onClick={handleApplyCoupon}
+                      className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
+                    >
+                      Apply
+                    </button>
+                  </div>
+                ) : (
+                  <div className={`${themeStyles.card} p-3 rounded-lg border flex items-center justify-between`}>
+                    <div>
+                      <span className={`text-sm font-semibold ${themeStyles.text}`}>{appliedCoupon.code}</span>
+                      <span className="text-sm text-green-400 ml-2">
+                        -{appliedCoupon.discountType === 'percentage' ? `${appliedCoupon.discountValue}%` : `₹${appliedCoupon.discountValue}`}
+                      </span>
+                    </div>
+                    <button
+                      onClick={removeCoupon}
+                      className="text-red-400 hover:text-red-300 text-sm"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                )}
+                {couponError && (
+                  <p className="text-red-400 text-xs mt-1">{couponError}</p>
+                )}
+              </div>
+
               <div className="flex justify-between items-center">
                 <span className={`text-lg sm:text-xl font-bold ${themeStyles.text}`}>Total</span>
-                <span className="text-xl sm:text-2xl font-bold text-purple-400">₹{calculateTotal()}/mo</span>
+                <div className="text-right">
+                  {appliedCoupon && (
+                    <div className={`text-sm ${themeStyles.textMuted} line-through mb-1`}>
+                      ₹{parseInt(selectedPlan.price.replace(/[₹,]/g, '').split('/')[0]) + 
+                        ((localAddons?.units || 0) * parseInt(selectedPlan.addons.unit.replace(/[₹,]/g, ''))) + 
+                        ((localAddons?.backups || 0) * parseInt(selectedPlan.addons.backup.replace(/[₹,]/g, '')))}/mo
+                    </div>
+                  )}
+                  <span className="text-xl sm:text-2xl font-bold text-purple-400">₹{calculateTotal()}/mo</span>
+                </div>
               </div>
             </div>
           </div>

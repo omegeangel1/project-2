@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, User, Mail, MessageCircle, Calendar, Shield, Crown, Star, Settings, LogOut, Copy, CheckCircle } from 'lucide-react';
 import { authManager, type AuthState } from '../utils/auth';
+import { superDatabase } from '../utils/database';
 
 interface UserProfileProps {
   theme?: string;
@@ -11,11 +12,21 @@ interface UserProfileProps {
 const UserProfile: React.FC<UserProfileProps> = ({ theme = 'dark', onBack, onLogout }) => {
   const [authState, setAuthState] = useState<AuthState>(authManager.getAuthState());
   const [copied, setCopied] = useState(false);
+  const [userPurchases, setUserPurchases] = useState<any[]>([]);
 
   useEffect(() => {
     const unsubscribe = authManager.subscribe(setAuthState);
+    
+    // Load user purchases
+    if (authState.isAuthenticated && authState.user) {
+      const user = superDatabase.getUserByDiscordId(authState.user.id);
+      if (user) {
+        setUserPurchases(user.purchases);
+      }
+    }
+    
     return unsubscribe;
-  }, []);
+  }, [authState]);
 
   const getThemeClasses = () => {
     switch (theme) {
@@ -141,7 +152,9 @@ const UserProfile: React.FC<UserProfileProps> = ({ theme = 'dark', onBack, onLog
               <div className={`${themeStyles.card} p-3 rounded-xl border mb-6`}>
                 <div className="flex items-center justify-center space-x-2">
                   <Crown className="w-4 h-4 text-yellow-400" />
-                  <span className={`text-sm font-semibold ${themeStyles.text}`}>Premium Member</span>
+                  <span className={`text-sm font-semibold ${themeStyles.text}`}>
+                    {superDatabase.getUserByDiscordId(authState.user.id)?.membershipType === 'premium' ? 'Premium Member' : 'Normal Member'}
+                  </span>
                 </div>
               </div>
 
@@ -254,6 +267,58 @@ const UserProfile: React.FC<UserProfileProps> = ({ theme = 'dark', onBack, onLog
                   <p className={`text-xs ${themeStyles.textMuted}`}>Good standing</p>
                 </div>
               </div>
+            </div>
+
+            {/* Purchase Status */}
+            <div className={`${themeStyles.card} rounded-2xl p-6 border`}>
+              <h3 className={`text-xl font-bold ${themeStyles.text} mb-6 flex items-center`}>
+                <Star className="w-5 h-5 mr-2" />
+                Purchase History
+              </h3>
+
+              {userPurchases.length > 0 ? (
+                <div className="space-y-4">
+                  <div className={`${themeStyles.card} p-4 rounded-xl border text-center`}>
+                    <CheckCircle className="w-8 h-8 text-green-400 mx-auto mb-2" />
+                    <h4 className={`font-semibold ${themeStyles.text} mb-1`}>You bought a server!</h4>
+                    <p className={`text-xs ${themeStyles.textMuted}`}>{userPurchases.length} active purchase(s)</p>
+                  </div>
+                  
+                  {userPurchases.map((purchase, index) => (
+                    <div key={index} className={`${themeStyles.card} p-4 rounded-xl border`}>
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h5 className={`font-semibold ${themeStyles.text} capitalize`}>
+                            {purchase.type} - {purchase.planName}
+                          </h5>
+                          <p className={`text-sm ${themeStyles.textSecondary}`}>{purchase.price}</p>
+                          <p className={`text-xs ${themeStyles.textMuted}`}>
+                            Purchased: {new Date(purchase.purchaseDate).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                            purchase.status === 'confirmed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                          }`}>
+                            {purchase.status}
+                          </span>
+                          <p className={`text-xs ${themeStyles.textMuted} mt-1`}>
+                            Renews: {new Date(purchase.renewalDate).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className={`${themeStyles.card} p-6 rounded-xl border text-center`}>
+                  <Star className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <h4 className={`font-semibold ${themeStyles.text} mb-2`}>No Purchases Yet</h4>
+                  <p className={`text-sm ${themeStyles.textMuted}`}>
+                    You haven't purchased any servers yet. Browse our plans to get started!
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Quick Actions */}
