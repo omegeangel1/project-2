@@ -99,7 +99,7 @@ function App() {
   // Check for admin route
   useEffect(() => {
     const path = window.location.pathname;
-    if (path === '/admin') {
+    if (path === '/admin' || path.startsWith('/admin')) {
       setCurrentView('admin');
     }
   }, []);
@@ -114,6 +114,20 @@ function App() {
     setCurrentView(route);
   };
 
+  // Handle browser back/forward buttons
+  useEffect(() => {
+    const handlePopState = () => {
+      const path = window.location.pathname;
+      if (path === '/admin' || path.startsWith('/admin')) {
+        setCurrentView('admin');
+      } else {
+        setCurrentView('home');
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
   const domainExtensions = [
     { tld: '.com', price: '₹999' },
     { tld: '.in', price: '₹599' },
