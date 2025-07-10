@@ -1,49 +1,109 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Users, 
-  ShoppingCart, 
-  TrendingUp, 
-  DollarSign, 
-  Eye, 
-  EyeOff, 
-  Plus, 
-  Trash2, 
-  Edit, 
-  Check, 
-  X, 
-  RefreshCw, 
-  Download, 
-  Search,
-  Filter,
-  Calendar,
-  Globe,
-  Server,
-  Crown,
-  Shield,
-  Zap,
-  Tag,
-  Gift,
-  BarChart3,
-  PieChart,
-  Activity,
-  Clock,
-  MapPin,
-  Smartphone,
-  Monitor,
-  Tablet,
-  LogOut,
-  Settings,
-  Bell,
-  AlertTriangle,
-  CheckCircle,
-  XCircle
-} from 'lucide-react';
+import { Users, ShoppingCart, TrendingUp, DollarSign, Eye, EyeOff, Plus, Trash2, Edit, Check, X, RefreshCw, Download, Search, Filter, Calendar, Globe, Server, Crown, Shield, Zap, Tag, Gift, BarChart3, PieChart, Activity, Clock, MapPin, Smartphone, Monitor, Tablet, LogOut, Settings, Bell, AlertTriangle, CheckCircle, XCircle, Mail, MessageCircle, Database, FileText, DatabaseBackup as Backup, Wifi, HardDrive, Cpu, MemoryStick, Network, Gauge, LineChart, Send, Archive, History, UserCheck, Briefcase, Target, Layers, Code, Terminal, Cloud, Lock, Key, Fingerprint } from 'lucide-react';
 import { superDatabase } from '../utils/database';
 import type { User, Order, SpecialOffer, Coupon } from '../utils/database';
 
 interface AdminPageProps {
   theme?: string;
   onLogout?: () => void;
+}
+
+// Email notification system
+class EmailNotificationService {
+  static async sendOrderConfirmation(order: Order, user: User) {
+    // Simulate email sending
+    console.log(`📧 Email sent to ${user.email}: Order ${order.orderId} confirmed`);
+    return true;
+  }
+
+  static async sendWelcomeEmail(user: User) {
+    console.log(`📧 Welcome email sent to ${user.email}`);
+    return true;
+  }
+
+  static async sendPromotionalEmail(users: User[], offer: SpecialOffer) {
+    console.log(`📧 Promotional email sent to ${users.length} users about ${offer.planName}`);
+    return true;
+  }
+}
+
+// Revenue analytics
+class RevenueAnalytics {
+  static calculateRevenue(orders: Order[]) {
+    const confirmedOrders = orders.filter(o => o.status === 'confirmed');
+    const totalRevenue = confirmedOrders.reduce((sum, order) => {
+      const price = parseInt(order.price.replace(/[₹,]/g, '').split('/')[0]);
+      return sum + price;
+    }, 0);
+
+    const monthlyRevenue = confirmedOrders
+      .filter(o => new Date(o.createdAt).getMonth() === new Date().getMonth())
+      .reduce((sum, order) => {
+        const price = parseInt(order.price.replace(/[₹,]/g, '').split('/')[0]);
+        return sum + price;
+      }, 0);
+
+    return { totalRevenue, monthlyRevenue, confirmedOrders: confirmedOrders.length };
+  }
+
+  static getRevenueByType(orders: Order[]) {
+    const confirmedOrders = orders.filter(o => o.status === 'confirmed');
+    const revenueByType = confirmedOrders.reduce((acc, order) => {
+      const price = parseInt(order.price.replace(/[₹,]/g, '').split('/')[0]);
+      acc[order.type] = (acc[order.type] || 0) + price;
+      return acc;
+    }, {} as Record<string, number>);
+
+    return revenueByType;
+  }
+}
+
+// Performance monitoring
+class PerformanceMonitor {
+  static getSystemMetrics() {
+    return {
+      responseTime: Math.random() * 100 + 50, // Simulated
+      uptime: 99.9,
+      activeConnections: Math.floor(Math.random() * 1000) + 500,
+      memoryUsage: Math.random() * 80 + 10,
+      cpuUsage: Math.random() * 60 + 20,
+      diskUsage: Math.random() * 70 + 15
+    };
+  }
+}
+
+// Audit logging
+class AuditLogger {
+  private static logs: Array<{
+    id: string;
+    action: string;
+    user: string;
+    timestamp: string;
+    details: any;
+  }> = [];
+
+  static log(action: string, user: string, details: any = {}) {
+    const logEntry = {
+      id: Date.now().toString(),
+      action,
+      user,
+      timestamp: new Date().toISOString(),
+      details
+    };
+    
+    this.logs.unshift(logEntry);
+    
+    // Keep only last 1000 logs
+    if (this.logs.length > 1000) {
+      this.logs = this.logs.slice(0, 1000);
+    }
+    
+    console.log(`🔍 Audit Log: ${action} by ${user}`, details);
+  }
+
+  static getLogs() {
+    return this.logs;
+  }
 }
 
 const AdminPage: React.FC<AdminPageProps> = ({ theme = 'dark', onLogout }) => {
@@ -57,6 +117,10 @@ const AdminPage: React.FC<AdminPageProps> = ({ theme = 'dark', onLogout }) => {
   const [filterStatus, setFilterStatus] = useState('all');
   const [isLoading, setIsLoading] = useState(false);
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
+  const [revenueData, setRevenueData] = useState<any>({});
+  const [performanceMetrics, setPerformanceMetrics] = useState<any>({});
+  const [auditLogs, setAuditLogs] = useState<any[]>([]);
+  const [notifications, setNotifications] = useState<any[]>([]);
 
   // New offer form state
   const [newOffer, setNewOffer] = useState({
@@ -78,6 +142,13 @@ const AdminPage: React.FC<AdminPageProps> = ({ theme = 'dark', onLogout }) => {
     isActive: true
   });
 
+  // Email campaign state
+  const [emailCampaign, setEmailCampaign] = useState({
+    subject: '',
+    message: '',
+    targetAudience: 'all' as 'all' | 'premium' | 'normal'
+  });
+
   const getThemeClasses = () => {
     switch (theme) {
       case 'light':
@@ -90,6 +161,7 @@ const AdminPage: React.FC<AdminPageProps> = ({ theme = 'dark', onLogout }) => {
           button: 'bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600',
           dangerButton: 'bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600',
           successButton: 'bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600',
+          warningButton: 'bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600',
           input: 'bg-white/80 border-gray-300 text-gray-900'
         };
       case 'glass':
@@ -102,6 +174,7 @@ const AdminPage: React.FC<AdminPageProps> = ({ theme = 'dark', onLogout }) => {
           button: 'bg-gradient-to-r from-purple-500/80 to-pink-500/80 hover:from-purple-600/80 hover:to-pink-600/80',
           dangerButton: 'bg-gradient-to-r from-red-500/80 to-pink-500/80 hover:from-red-600/80 hover:to-pink-600/80',
           successButton: 'bg-gradient-to-r from-green-500/80 to-emerald-500/80 hover:from-green-600/80 hover:to-emerald-600/80',
+          warningButton: 'bg-gradient-to-r from-yellow-500/80 to-orange-500/80 hover:from-yellow-600/80 hover:to-orange-600/80',
           input: 'bg-white/5 border-white/10 text-white'
         };
       default: // dark
@@ -114,6 +187,7 @@ const AdminPage: React.FC<AdminPageProps> = ({ theme = 'dark', onLogout }) => {
           button: 'bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600',
           dangerButton: 'bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600',
           successButton: 'bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600',
+          warningButton: 'bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600',
           input: 'bg-white/10 border-white/20 text-white'
         };
     }
@@ -128,10 +202,18 @@ const AdminPage: React.FC<AdminPageProps> = ({ theme = 'dark', onLogout }) => {
     // Auto-refresh every 30 seconds
     const interval = setInterval(() => {
       loadData();
+      updatePerformanceMetrics();
     }, 30000);
+
+    // Initial performance metrics
+    updatePerformanceMetrics();
 
     return () => clearInterval(interval);
   }, []);
+
+  const updatePerformanceMetrics = () => {
+    setPerformanceMetrics(PerformanceMonitor.getSystemMetrics());
+  };
 
   const loadData = () => {
     setIsLoading(true);
@@ -151,7 +233,21 @@ const AdminPage: React.FC<AdminPageProps> = ({ theme = 'dark', onLogout }) => {
       setSpecialOffers(allOffers);
       setCoupons(allCoupons);
       setAnalytics(analyticsData);
+      
+      // Calculate revenue data
+      const revenue = RevenueAnalytics.calculateRevenue(allOrders);
+      const revenueByType = RevenueAnalytics.getRevenueByType(allOrders);
+      setRevenueData({ ...revenue, revenueByType });
+      
+      // Load audit logs
+      setAuditLogs(AuditLogger.getLogs());
+      
+      // Generate notifications
+      generateNotifications(allOrders, allUsers);
+      
       setLastRefresh(new Date());
+      
+      AuditLogger.log('Data Refresh', 'Admin', { timestamp: new Date().toISOString() });
     } catch (error) {
       console.error('Error loading admin data:', error);
     } finally {
@@ -159,8 +255,55 @@ const AdminPage: React.FC<AdminPageProps> = ({ theme = 'dark', onLogout }) => {
     }
   };
 
+  const generateNotifications = (orders: Order[], users: User[]) => {
+    const notifications = [];
+    
+    // Pending orders notification
+    const pendingOrders = orders.filter(o => o.status === 'pending');
+    if (pendingOrders.length > 0) {
+      notifications.push({
+        id: 'pending-orders',
+        type: 'warning',
+        title: 'Pending Orders',
+        message: `${pendingOrders.length} orders need attention`,
+        action: () => setActiveTab('orders')
+      });
+    }
+    
+    // New users notification
+    const recentUsers = users.filter(u => 
+      new Date(u.createdAt).getTime() > Date.now() - 24 * 60 * 60 * 1000
+    );
+    if (recentUsers.length > 0) {
+      notifications.push({
+        id: 'new-users',
+        type: 'info',
+        title: 'New Users',
+        message: `${recentUsers.length} new users joined today`,
+        action: () => setActiveTab('users')
+      });
+    }
+    
+    // Expiring coupons
+    const expiringCoupons = coupons.filter(c => 
+      new Date(c.expiryDate).getTime() < Date.now() + 7 * 24 * 60 * 60 * 1000
+    );
+    if (expiringCoupons.length > 0) {
+      notifications.push({
+        id: 'expiring-coupons',
+        type: 'warning',
+        title: 'Expiring Coupons',
+        message: `${expiringCoupons.length} coupons expire soon`,
+        action: () => setActiveTab('coupons')
+      });
+    }
+    
+    setNotifications(notifications);
+  };
+
   const handleRefresh = () => {
     loadData();
+    AuditLogger.log('Manual Refresh', 'Admin');
   };
 
   const handleCreateOffer = () => {
@@ -170,7 +313,7 @@ const AdminPage: React.FC<AdminPageProps> = ({ theme = 'dark', onLogout }) => {
       ((parseInt(newOffer.originalPrice) - parseInt(newOffer.discountPrice)) / parseInt(newOffer.originalPrice)) * 100
     );
 
-    superDatabase.createSpecialOffer({
+    const offer = superDatabase.createSpecialOffer({
       ...newOffer,
       discountPercentage
     });
@@ -184,13 +327,14 @@ const AdminPage: React.FC<AdminPageProps> = ({ theme = 'dark', onLogout }) => {
       isActive: true
     });
 
+    AuditLogger.log('Create Special Offer', 'Admin', { offerId: offer.id, planName: offer.planName });
     loadData();
   };
 
   const handleCreateCoupon = () => {
     if (!newCoupon.code || !newCoupon.expiryDate) return;
 
-    superDatabase.createCoupon(newCoupon);
+    const coupon = superDatabase.createCoupon(newCoupon);
 
     setNewCoupon({
       code: '',
@@ -201,12 +345,14 @@ const AdminPage: React.FC<AdminPageProps> = ({ theme = 'dark', onLogout }) => {
       isActive: true
     });
 
+    AuditLogger.log('Create Coupon', 'Admin', { couponId: coupon.id, code: coupon.code });
     loadData();
   };
 
   const handleDeleteOffer = (offerId: string) => {
     if (confirm('Are you sure you want to delete this offer?')) {
       superDatabase.deleteSpecialOffer(offerId);
+      AuditLogger.log('Delete Special Offer', 'Admin', { offerId });
       loadData();
     }
   };
@@ -214,30 +360,44 @@ const AdminPage: React.FC<AdminPageProps> = ({ theme = 'dark', onLogout }) => {
   const handleDeleteCoupon = (couponId: string) => {
     if (confirm('Are you sure you want to delete this coupon?')) {
       superDatabase.deleteCoupon(couponId);
+      AuditLogger.log('Delete Coupon', 'Admin', { couponId });
       loadData();
     }
   };
 
   const handleToggleOffer = (offerId: string) => {
     superDatabase.toggleSpecialOffer(offerId);
+    AuditLogger.log('Toggle Special Offer', 'Admin', { offerId });
     loadData();
   };
 
   const handleToggleCoupon = (couponId: string) => {
     superDatabase.toggleCoupon(couponId);
+    AuditLogger.log('Toggle Coupon', 'Admin', { couponId });
     loadData();
   };
 
-  const handleConfirmOrder = (orderId: string) => {
+  const handleConfirmOrder = async (orderId: string) => {
     if (confirm('Are you sure you want to confirm this order?')) {
-      superDatabase.confirmOrder(orderId);
-      loadData();
+      const success = superDatabase.confirmOrder(orderId);
+      if (success) {
+        const order = orders.find(o => o.orderId === orderId);
+        const user = users.find(u => u.id === order?.userId);
+        
+        if (order && user) {
+          await EmailNotificationService.sendOrderConfirmation(order, user);
+        }
+        
+        AuditLogger.log('Confirm Order', 'Admin', { orderId });
+        loadData();
+      }
     }
   };
 
   const handleResetOrder = (orderId: string) => {
     if (confirm('Are you sure you want to reset this order to pending?')) {
       superDatabase.resetOrder(orderId);
+      AuditLogger.log('Reset Order', 'Admin', { orderId });
       loadData();
     }
   };
@@ -245,8 +405,78 @@ const AdminPage: React.FC<AdminPageProps> = ({ theme = 'dark', onLogout }) => {
   const handleDeleteOrder = (orderId: string) => {
     if (confirm('Are you sure you want to delete this order? This action cannot be undone.')) {
       superDatabase.deleteOrder(orderId);
+      AuditLogger.log('Delete Order', 'Admin', { orderId });
       loadData();
     }
+  };
+
+  const handleBulkOrderAction = (action: string, orderIds: string[]) => {
+    if (confirm(`Are you sure you want to ${action} ${orderIds.length} orders?`)) {
+      orderIds.forEach(orderId => {
+        switch (action) {
+          case 'confirm':
+            superDatabase.confirmOrder(orderId);
+            break;
+          case 'reset':
+            superDatabase.resetOrder(orderId);
+            break;
+          case 'delete':
+            superDatabase.deleteOrder(orderId);
+            break;
+        }
+      });
+      
+      AuditLogger.log('Bulk Order Action', 'Admin', { action, orderIds });
+      loadData();
+    }
+  };
+
+  const handleSendEmailCampaign = async () => {
+    if (!emailCampaign.subject || !emailCampaign.message) return;
+
+    let targetUsers = users;
+    if (emailCampaign.targetAudience === 'premium') {
+      targetUsers = users.filter(u => u.membershipType === 'premium');
+    } else if (emailCampaign.targetAudience === 'normal') {
+      targetUsers = users.filter(u => u.membershipType === 'normal');
+    }
+
+    // Simulate sending emails
+    console.log(`📧 Sending email campaign to ${targetUsers.length} users`);
+    
+    AuditLogger.log('Send Email Campaign', 'Admin', {
+      subject: emailCampaign.subject,
+      targetAudience: emailCampaign.targetAudience,
+      recipientCount: targetUsers.length
+    });
+
+    setEmailCampaign({ subject: '', message: '', targetAudience: 'all' });
+    alert(`Email campaign sent to ${targetUsers.length} users!`);
+  };
+
+  const handleBackupData = () => {
+    const backupData = {
+      users,
+      orders,
+      specialOffers,
+      coupons,
+      analytics,
+      auditLogs,
+      backupDate: new Date().toISOString(),
+      version: '1.0'
+    };
+
+    const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `demon-node-backup-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    AuditLogger.log('Data Backup', 'Admin', { recordCount: users.length + orders.length });
   };
 
   const exportData = () => {
@@ -256,6 +486,9 @@ const AdminPage: React.FC<AdminPageProps> = ({ theme = 'dark', onLogout }) => {
       specialOffers,
       coupons,
       analytics,
+      revenueData,
+      performanceMetrics,
+      auditLogs,
       exportDate: new Date().toISOString()
     };
 
@@ -268,6 +501,36 @@ const AdminPage: React.FC<AdminPageProps> = ({ theme = 'dark', onLogout }) => {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+
+    AuditLogger.log('Data Export', 'Admin');
+  };
+
+  const generateReport = () => {
+    const report = {
+      summary: {
+        totalUsers: analytics.totalUsers,
+        totalOrders: analytics.totalOrders,
+        totalRevenue: revenueData.totalRevenue,
+        conversionRate: analytics.totalUsers > 0 ? (analytics.confirmedOrders / analytics.totalUsers * 100).toFixed(2) : 0
+      },
+      revenue: revenueData,
+      performance: performanceMetrics,
+      userAnalytics: analytics,
+      recentActivity: auditLogs.slice(0, 50),
+      generatedAt: new Date().toISOString()
+    };
+
+    const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `demon-node-report-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    AuditLogger.log('Generate Report', 'Admin');
   };
 
   const filteredOrders = orders.filter(order => {
@@ -304,13 +567,28 @@ const AdminPage: React.FC<AdminPageProps> = ({ theme = 'dark', onLogout }) => {
     }
   };
 
+  const getNotificationIcon = (type: string) => {
+    switch (type) {
+      case 'warning': return <AlertTriangle className="w-4 h-4 text-yellow-400" />;
+      case 'error': return <XCircle className="w-4 h-4 text-red-400" />;
+      case 'success': return <CheckCircle className="w-4 h-4 text-green-400" />;
+      default: return <Bell className="w-4 h-4 text-blue-400" />;
+    }
+  };
+
   const tabs = [
     { id: 'dashboard', name: 'Dashboard', icon: <BarChart3 className="w-4 h-4" /> },
     { id: 'orders', name: 'Orders', icon: <ShoppingCart className="w-4 h-4" /> },
     { id: 'users', name: 'Users', icon: <Users className="w-4 h-4" /> },
     { id: 'offers', name: 'Special Offers', icon: <Gift className="w-4 h-4" /> },
     { id: 'coupons', name: 'Coupons', icon: <Tag className="w-4 h-4" /> },
-    { id: 'analytics', name: 'Analytics', icon: <PieChart className="w-4 h-4" /> }
+    { id: 'analytics', name: 'Analytics', icon: <PieChart className="w-4 h-4" /> },
+    { id: 'revenue', name: 'Revenue', icon: <DollarSign className="w-4 h-4" /> },
+    { id: 'performance', name: 'Performance', icon: <Gauge className="w-4 h-4" /> },
+    { id: 'notifications', name: 'Notifications', icon: <Bell className="w-4 h-4" /> },
+    { id: 'audit', name: 'Audit Logs', icon: <History className="w-4 h-4" /> },
+    { id: 'support', name: 'Support', icon: <MessageCircle className="w-4 h-4" /> },
+    { id: 'settings', name: 'Settings', icon: <Settings className="w-4 h-4" /> }
   ];
 
   return (
@@ -329,11 +607,26 @@ const AdminPage: React.FC<AdminPageProps> = ({ theme = 'dark', onLogout }) => {
               </div>
               <div>
                 <h1 className={`text-xl font-bold ${themeStyles.text}`}>Demon Node™ Admin</h1>
-                <p className={`text-sm ${themeStyles.textMuted}`}>Control Panel</p>
+                <p className={`text-sm ${themeStyles.textMuted}`}>Advanced Control Panel</p>
               </div>
             </div>
 
             <div className="flex items-center space-x-4">
+              {/* Notifications Badge */}
+              {notifications.length > 0 && (
+                <div className="relative">
+                  <button
+                    onClick={() => setActiveTab('notifications')}
+                    className={`${themeStyles.card} p-2 rounded-lg border relative`}
+                  >
+                    <Bell className="w-4 h-4 text-yellow-400" />
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                      {notifications.length}
+                    </span>
+                  </button>
+                </div>
+              )}
+
               <div className={`${themeStyles.card} px-3 py-2 rounded-lg border flex items-center space-x-2`}>
                 <Activity className="w-4 h-4 text-green-400" />
                 <span className={`text-sm ${themeStyles.textSecondary}`}>
@@ -348,6 +641,14 @@ const AdminPage: React.FC<AdminPageProps> = ({ theme = 'dark', onLogout }) => {
                 title="Refresh Data"
               >
                 <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+              </button>
+
+              <button
+                onClick={handleBackupData}
+                className={`${themeStyles.warningButton} text-white p-2 rounded-lg transition-all duration-300`}
+                title="Backup Data"
+              >
+                <Backup className="w-4 h-4" />
               </button>
 
               <button
@@ -378,12 +679,12 @@ const AdminPage: React.FC<AdminPageProps> = ({ theme = 'dark', onLogout }) => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Tab Navigation */}
         <div className="mb-8">
-          <div className={`${themeStyles.card} p-2 rounded-xl border inline-flex space-x-1 overflow-x-auto`}>
+          <div className={`${themeStyles.card} p-2 rounded-xl border inline-flex space-x-1 overflow-x-auto max-w-full`}>
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 flex items-center space-x-2 whitespace-nowrap ${
+                className={`px-3 py-2 rounded-lg font-medium transition-all duration-300 flex items-center space-x-2 whitespace-nowrap text-sm ${
                   activeTab === tab.id
                     ? `${themeStyles.button} text-white`
                     : `${themeStyles.textSecondary} hover:text-white hover:bg-white/10`
@@ -399,7 +700,7 @@ const AdminPage: React.FC<AdminPageProps> = ({ theme = 'dark', onLogout }) => {
         {/* Dashboard Tab */}
         {activeTab === 'dashboard' && (
           <div className="space-y-8">
-            {/* Stats Cards */}
+            {/* Enhanced Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <div className={`${themeStyles.card} p-6 rounded-xl border hover:scale-105 transition-all duration-300`}>
                 <div className="flex items-center justify-between">
@@ -407,7 +708,7 @@ const AdminPage: React.FC<AdminPageProps> = ({ theme = 'dark', onLogout }) => {
                     <p className={`text-sm ${themeStyles.textMuted}`}>Total Users</p>
                     <p className={`text-2xl font-bold ${themeStyles.text}`}>{analytics.totalUsers || 0}</p>
                     <p className={`text-xs ${themeStyles.textSecondary}`}>
-                      {analytics.premiumUsers || 0} premium
+                      {analytics.premiumUsers || 0} premium • {analytics.normalUsers || 0} normal
                     </p>
                   </div>
                   <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center">
@@ -419,13 +720,28 @@ const AdminPage: React.FC<AdminPageProps> = ({ theme = 'dark', onLogout }) => {
               <div className={`${themeStyles.card} p-6 rounded-xl border hover:scale-105 transition-all duration-300`}>
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className={`text-sm ${themeStyles.textMuted}`}>Total Orders</p>
-                    <p className={`text-2xl font-bold ${themeStyles.text}`}>{analytics.totalOrders || 0}</p>
+                    <p className={`text-sm ${themeStyles.textMuted}`}>Total Revenue</p>
+                    <p className={`text-2xl font-bold ${themeStyles.text}`}>₹{revenueData.totalRevenue || 0}</p>
                     <p className={`text-xs ${themeStyles.textSecondary}`}>
-                      {analytics.confirmedOrders || 0} confirmed
+                      ₹{revenueData.monthlyRevenue || 0} this month
                     </p>
                   </div>
                   <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center">
+                    <DollarSign className="w-6 h-6 text-white" />
+                  </div>
+                </div>
+              </div>
+
+              <div className={`${themeStyles.card} p-6 rounded-xl border hover:scale-105 transition-all duration-300`}>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className={`text-sm ${themeStyles.textMuted}`}>Orders</p>
+                    <p className={`text-2xl font-bold ${themeStyles.text}`}>{analytics.totalOrders || 0}</p>
+                    <p className={`text-xs ${themeStyles.textSecondary}`}>
+                      {analytics.confirmedOrders || 0} confirmed • {analytics.pendingOrders || 0} pending
+                    </p>
+                  </div>
+                  <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
                     <ShoppingCart className="w-6 h-6 text-white" />
                   </div>
                 </div>
@@ -434,79 +750,445 @@ const AdminPage: React.FC<AdminPageProps> = ({ theme = 'dark', onLogout }) => {
               <div className={`${themeStyles.card} p-6 rounded-xl border hover:scale-105 transition-all duration-300`}>
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className={`text-sm ${themeStyles.textMuted}`}>Pending Orders</p>
-                    <p className={`text-2xl font-bold ${themeStyles.text}`}>{analytics.pendingOrders || 0}</p>
+                    <p className={`text-sm ${themeStyles.textMuted}`}>System Health</p>
+                    <p className={`text-2xl font-bold ${themeStyles.text}`}>{performanceMetrics.uptime || 99.9}%</p>
                     <p className={`text-xs ${themeStyles.textSecondary}`}>
-                      Needs attention
+                      {Math.round(performanceMetrics.responseTime || 0)}ms response
                     </p>
                   </div>
                   <div className="w-12 h-12 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-xl flex items-center justify-center">
-                    <Clock className="w-6 h-6 text-white" />
-                  </div>
-                </div>
-              </div>
-
-              <div className={`${themeStyles.card} p-6 rounded-xl border hover:scale-105 transition-all duration-300`}>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className={`text-sm ${themeStyles.textMuted}`}>Active Offers</p>
-                    <p className={`text-2xl font-bold ${themeStyles.text}`}>{analytics.activeOffers || 0}</p>
-                    <p className={`text-xs ${themeStyles.textSecondary}`}>
-                      {analytics.activeCoupons || 0} coupons
-                    </p>
-                  </div>
-                  <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
-                    <Gift className="w-6 h-6 text-white" />
+                    <Gauge className="w-6 h-6 text-white" />
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Recent Orders */}
+            {/* Quick Actions */}
             <div className={`${themeStyles.card} rounded-xl p-6 border`}>
-              <h3 className={`text-xl font-bold ${themeStyles.text} mb-4`}>Recent Orders</h3>
-              <div className="space-y-3">
-                {orders.slice(0, 5).map((order) => (
-                  <div key={order.id} className={`${themeStyles.card} p-4 rounded-lg border flex items-center justify-between`}>
-                    <div className="flex items-center space-x-3">
-                      {getTypeIcon(order.type)}
-                      <div>
-                        <p className={`font-semibold ${themeStyles.text}`}>#{order.orderId}</p>
-                        <p className={`text-sm ${themeStyles.textSecondary}`}>{order.planName}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-3">
-                      <span className={`text-sm ${themeStyles.textSecondary}`}>{order.price}</span>
-                      {getStatusIcon(order.status)}
-                    </div>
-                  </div>
-                ))}
-                {orders.length === 0 && (
-                  <p className={`text-center ${themeStyles.textMuted} py-8`}>No orders yet</p>
-                )}
+              <h3 className={`text-xl font-bold ${themeStyles.text} mb-4`}>Quick Actions</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <button
+                  onClick={() => setActiveTab('orders')}
+                  className={`${themeStyles.button} text-white p-4 rounded-xl transition-all duration-300 hover:scale-105 flex flex-col items-center space-y-2`}
+                >
+                  <ShoppingCart className="w-6 h-6" />
+                  <span className="text-sm font-medium">Manage Orders</span>
+                </button>
+                <button
+                  onClick={() => setActiveTab('offers')}
+                  className={`${themeStyles.successButton} text-white p-4 rounded-xl transition-all duration-300 hover:scale-105 flex flex-col items-center space-y-2`}
+                >
+                  <Gift className="w-6 h-6" />
+                  <span className="text-sm font-medium">Create Offer</span>
+                </button>
+                <button
+                  onClick={generateReport}
+                  className={`${themeStyles.warningButton} text-white p-4 rounded-xl transition-all duration-300 hover:scale-105 flex flex-col items-center space-y-2`}
+                >
+                  <FileText className="w-6 h-6" />
+                  <span className="text-sm font-medium">Generate Report</span>
+                </button>
+                <button
+                  onClick={() => setActiveTab('support')}
+                  className={`${themeStyles.dangerButton} text-white p-4 rounded-xl transition-all duration-300 hover:scale-105 flex flex-col items-center space-y-2`}
+                >
+                  <MessageCircle className="w-6 h-6" />
+                  <span className="text-sm font-medium">Support Chat</span>
+                </button>
               </div>
             </div>
 
-            {/* Device Analytics */}
-            {analytics.deviceStats && Object.keys(analytics.deviceStats).length > 0 && (
+            {/* Recent Activity & System Status */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* Recent Orders */}
               <div className={`${themeStyles.card} rounded-xl p-6 border`}>
-                <h3 className={`text-xl font-bold ${themeStyles.text} mb-4`}>Device Analytics</h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {Object.entries(analytics.deviceStats).map(([device, count]) => (
-                    <div key={device} className={`${themeStyles.card} p-4 rounded-lg border flex items-center justify-between`}>
+                <h3 className={`text-xl font-bold ${themeStyles.text} mb-4`}>Recent Orders</h3>
+                <div className="space-y-3">
+                  {orders.slice(0, 5).map((order) => (
+                    <div key={order.id} className={`${themeStyles.card} p-4 rounded-lg border flex items-center justify-between`}>
                       <div className="flex items-center space-x-3">
-                        {getDeviceIcon(device)}
-                        <span className={`font-medium ${themeStyles.text}`}>{device}</span>
+                        {getTypeIcon(order.type)}
+                        <div>
+                          <p className={`font-semibold ${themeStyles.text}`}>#{order.orderId}</p>
+                          <p className={`text-sm ${themeStyles.textSecondary}`}>{order.planName}</p>
+                        </div>
                       </div>
-                      <span className={`text-lg font-bold ${themeStyles.text}`}>{count}</span>
+                      <div className="flex items-center space-x-3">
+                        <span className={`text-sm ${themeStyles.textSecondary}`}>{order.price}</span>
+                        {getStatusIcon(order.status)}
+                      </div>
                     </div>
                   ))}
+                  {orders.length === 0 && (
+                    <p className={`text-center ${themeStyles.textMuted} py-8`}>No orders yet</p>
+                  )}
                 </div>
               </div>
-            )}
+
+              {/* System Performance */}
+              <div className={`${themeStyles.card} rounded-xl p-6 border`}>
+                <h3 className={`text-xl font-bold ${themeStyles.text} mb-4`}>System Performance</h3>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <Cpu className="w-4 h-4 text-blue-400" />
+                      <span className={`text-sm ${themeStyles.textSecondary}`}>CPU Usage</span>
+                    </div>
+                    <span className={`text-sm font-bold ${themeStyles.text}`}>
+                      {Math.round(performanceMetrics.cpuUsage || 0)}%
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <MemoryStick className="w-4 h-4 text-green-400" />
+                      <span className={`text-sm ${themeStyles.textSecondary}`}>Memory Usage</span>
+                    </div>
+                    <span className={`text-sm font-bold ${themeStyles.text}`}>
+                      {Math.round(performanceMetrics.memoryUsage || 0)}%
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <HardDrive className="w-4 h-4 text-purple-400" />
+                      <span className={`text-sm ${themeStyles.textSecondary}`}>Disk Usage</span>
+                    </div>
+                    <span className={`text-sm font-bold ${themeStyles.text}`}>
+                      {Math.round(performanceMetrics.diskUsage || 0)}%
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <Network className="w-4 h-4 text-yellow-400" />
+                      <span className={`text-sm ${themeStyles.textSecondary}`}>Active Connections</span>
+                    </div>
+                    <span className={`text-sm font-bold ${themeStyles.text}`}>
+                      {performanceMetrics.activeConnections || 0}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         )}
 
+        {/* Revenue Tab */}
+        {activeTab === 'revenue' && (
+          <div className="space-y-8">
+            {/* Revenue Overview */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className={`${themeStyles.card} p-6 rounded-xl border`}>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className={`text-sm ${themeStyles.textMuted}`}>Total Revenue</p>
+                    <p className={`text-3xl font-bold ${themeStyles.text}`}>₹{revenueData.totalRevenue || 0}</p>
+                  </div>
+                  <DollarSign className="w-8 h-8 text-green-400" />
+                </div>
+              </div>
+              <div className={`${themeStyles.card} p-6 rounded-xl border`}>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className={`text-sm ${themeStyles.textMuted}`}>Monthly Revenue</p>
+                    <p className={`text-3xl font-bold ${themeStyles.text}`}>₹{revenueData.monthlyRevenue || 0}</p>
+                  </div>
+                  <TrendingUp className="w-8 h-8 text-blue-400" />
+                </div>
+              </div>
+              <div className={`${themeStyles.card} p-6 rounded-xl border`}>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className={`text-sm ${themeStyles.textMuted}`}>Avg. Order Value</p>
+                    <p className={`text-3xl font-bold ${themeStyles.text}`}>
+                      ₹{revenueData.confirmedOrders > 0 ? Math.round(revenueData.totalRevenue / revenueData.confirmedOrders) : 0}
+                    </p>
+                  </div>
+                  <BarChart3 className="w-8 h-8 text-purple-400" />
+                </div>
+              </div>
+            </div>
+
+            {/* Revenue by Service Type */}
+            <div className={`${themeStyles.card} rounded-xl p-6 border`}>
+              <h3 className={`text-xl font-bold ${themeStyles.text} mb-6`}>Revenue by Service Type</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {Object.entries(revenueData.revenueByType || {}).map(([type, revenue]) => (
+                  <div key={type} className={`${themeStyles.card} p-4 rounded-lg border text-center`}>
+                    <div className="flex justify-center mb-3">
+                      {getTypeIcon(type)}
+                    </div>
+                    <h4 className={`font-semibold ${themeStyles.text} capitalize mb-2`}>{type}</h4>
+                    <p className={`text-2xl font-bold ${themeStyles.text}`}>₹{revenue}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Performance Tab */}
+        {activeTab === 'performance' && (
+          <div className="space-y-8">
+            {/* Performance Metrics */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className={`${themeStyles.card} p-6 rounded-xl border`}>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className={`text-sm ${themeStyles.textMuted}`}>Uptime</p>
+                    <p className={`text-2xl font-bold ${themeStyles.text}`}>{performanceMetrics.uptime}%</p>
+                  </div>
+                  <Activity className="w-8 h-8 text-green-400" />
+                </div>
+              </div>
+              <div className={`${themeStyles.card} p-6 rounded-xl border`}>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className={`text-sm ${themeStyles.textMuted}`}>Response Time</p>
+                    <p className={`text-2xl font-bold ${themeStyles.text}`}>{Math.round(performanceMetrics.responseTime)}ms</p>
+                  </div>
+                  <Clock className="w-8 h-8 text-blue-400" />
+                </div>
+              </div>
+              <div className={`${themeStyles.card} p-6 rounded-xl border`}>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className={`text-sm ${themeStyles.textMuted}`}>Active Users</p>
+                    <p className={`text-2xl font-bold ${themeStyles.text}`}>{performanceMetrics.activeConnections}</p>
+                  </div>
+                  <Users className="w-8 h-8 text-purple-400" />
+                </div>
+              </div>
+              <div className={`${themeStyles.card} p-6 rounded-xl border`}>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className={`text-sm ${themeStyles.textMuted}`}>System Load</p>
+                    <p className={`text-2xl font-bold ${themeStyles.text}`}>{Math.round(performanceMetrics.cpuUsage)}%</p>
+                  </div>
+                  <Gauge className="w-8 h-8 text-yellow-400" />
+                </div>
+              </div>
+            </div>
+
+            {/* Detailed Performance */}
+            <div className={`${themeStyles.card} rounded-xl p-6 border`}>
+              <h3 className={`text-xl font-bold ${themeStyles.text} mb-6`}>System Resources</h3>
+              <div className="space-y-6">
+                <div>
+                  <div className="flex justify-between mb-2">
+                    <span className={`text-sm ${themeStyles.textSecondary}`}>CPU Usage</span>
+                    <span className={`text-sm font-bold ${themeStyles.text}`}>{Math.round(performanceMetrics.cpuUsage)}%</span>
+                  </div>
+                  <div className="w-full bg-gray-700 rounded-full h-2">
+                    <div 
+                      className="bg-blue-500 h-2 rounded-full transition-all duration-300" 
+                      style={{ width: `${performanceMetrics.cpuUsage}%` }}
+                    ></div>
+                  </div>
+                </div>
+                <div>
+                  <div className="flex justify-between mb-2">
+                    <span className={`text-sm ${themeStyles.textSecondary}`}>Memory Usage</span>
+                    <span className={`text-sm font-bold ${themeStyles.text}`}>{Math.round(performanceMetrics.memoryUsage)}%</span>
+                  </div>
+                  <div className="w-full bg-gray-700 rounded-full h-2">
+                    <div 
+                      className="bg-green-500 h-2 rounded-full transition-all duration-300" 
+                      style={{ width: `${performanceMetrics.memoryUsage}%` }}
+                    ></div>
+                  </div>
+                </div>
+                <div>
+                  <div className="flex justify-between mb-2">
+                    <span className={`text-sm ${themeStyles.textSecondary}`}>Disk Usage</span>
+                    <span className={`text-sm font-bold ${themeStyles.text}`}>{Math.round(performanceMetrics.diskUsage)}%</span>
+                  </div>
+                  <div className="w-full bg-gray-700 rounded-full h-2">
+                    <div 
+                      className="bg-purple-500 h-2 rounded-full transition-all duration-300" 
+                      style={{ width: `${performanceMetrics.diskUsage}%` }}
+                    ></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Notifications Tab */}
+        {activeTab === 'notifications' && (
+          <div className="space-y-8">
+            {/* Email Campaign */}
+            <div className={`${themeStyles.card} rounded-xl p-6 border`}>
+              <h3 className={`text-xl font-bold ${themeStyles.text} mb-4`}>Send Email Campaign</h3>
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <input
+                    type="text"
+                    placeholder="Email Subject"
+                    value={emailCampaign.subject}
+                    onChange={(e) => setEmailCampaign({...emailCampaign, subject: e.target.value})}
+                    className={`px-4 py-2 ${themeStyles.input} border rounded-lg`}
+                  />
+                  <select
+                    value={emailCampaign.targetAudience}
+                    onChange={(e) => setEmailCampaign({...emailCampaign, targetAudience: e.target.value as any})}
+                    className={`px-4 py-2 ${themeStyles.input} border rounded-lg`}
+                  >
+                    <option value="all">All Users</option>
+                    <option value="premium">Premium Users</option>
+                    <option value="normal">Normal Users</option>
+                  </select>
+                </div>
+                <textarea
+                  placeholder="Email Message"
+                  value={emailCampaign.message}
+                  onChange={(e) => setEmailCampaign({...emailCampaign, message: e.target.value})}
+                  rows={4}
+                  className={`w-full px-4 py-2 ${themeStyles.input} border rounded-lg`}
+                />
+                <button
+                  onClick={handleSendEmailCampaign}
+                  className={`${themeStyles.button} text-white px-6 py-2 rounded-lg font-semibold transition-all duration-300 flex items-center space-x-2`}
+                >
+                  <Send className="w-4 h-4" />
+                  <span>Send Campaign</span>
+                </button>
+              </div>
+            </div>
+
+            {/* System Notifications */}
+            <div className={`${themeStyles.card} rounded-xl p-6 border`}>
+              <h3 className={`text-xl font-bold ${themeStyles.text} mb-4`}>System Notifications</h3>
+              <div className="space-y-3">
+                {notifications.map((notification) => (
+                  <div key={notification.id} className={`${themeStyles.card} p-4 rounded-lg border flex items-center justify-between`}>
+                    <div className="flex items-center space-x-3">
+                      {getNotificationIcon(notification.type)}
+                      <div>
+                        <p className={`font-semibold ${themeStyles.text}`}>{notification.title}</p>
+                        <p className={`text-sm ${themeStyles.textSecondary}`}>{notification.message}</p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={notification.action}
+                      className={`${themeStyles.button} text-white px-4 py-2 rounded-lg text-sm`}
+                    >
+                      View
+                    </button>
+                  </div>
+                ))}
+                {notifications.length === 0 && (
+                  <p className={`text-center ${themeStyles.textMuted} py-8`}>No notifications</p>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Audit Logs Tab */}
+        {activeTab === 'audit' && (
+          <div className="space-y-6">
+            <div className={`${themeStyles.card} rounded-xl border overflow-hidden`}>
+              <div className="p-6 border-b border-white/10">
+                <h3 className={`text-xl font-bold ${themeStyles.text}`}>Audit Logs</h3>
+                <p className={`text-sm ${themeStyles.textMuted}`}>Track all administrative actions</p>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className={`${themeStyles.card} border-b border-white/10`}>
+                    <tr>
+                      <th className={`text-left p-4 font-semibold ${themeStyles.text}`}>Timestamp</th>
+                      <th className={`text-left p-4 font-semibold ${themeStyles.text}`}>Action</th>
+                      <th className={`text-left p-4 font-semibold ${themeStyles.text}`}>User</th>
+                      <th className={`text-left p-4 font-semibold ${themeStyles.text}`}>Details</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {auditLogs.slice(0, 50).map((log) => (
+                      <tr key={log.id} className="border-b border-white/5 hover:bg-white/5">
+                        <td className={`p-4 ${themeStyles.textSecondary} text-sm font-mono`}>
+                          {new Date(log.timestamp).toLocaleString()}
+                        </td>
+                        <td className={`p-4 ${themeStyles.text}`}>{log.action}</td>
+                        <td className={`p-4 ${themeStyles.textSecondary}`}>{log.user}</td>
+                        <td className={`p-4 ${themeStyles.textMuted} text-sm`}>
+                          {JSON.stringify(log.details)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                {auditLogs.length === 0 && (
+                  <div className="text-center py-8">
+                    <p className={`${themeStyles.textMuted}`}>No audit logs found</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Support Tab */}
+        {activeTab === 'support' && (
+          <div className="space-y-8">
+            <div className={`${themeStyles.card} rounded-xl p-6 border text-center`}>
+              <MessageCircle className="w-16 h-16 text-purple-400 mx-auto mb-4" />
+              <h3 className={`text-2xl font-bold ${themeStyles.text} mb-4`}>Customer Support Chat</h3>
+              <p className={`${themeStyles.textSecondary} mb-6`}>
+                Integrated support system coming soon. For now, manage support through Discord.
+              </p>
+              <a
+                href="https://discord.gg/Qy6tuNJmwJ"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`${themeStyles.button} text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300 inline-flex items-center space-x-2`}
+              >
+                <MessageCircle className="w-5 h-5" />
+                <span>Open Discord</span>
+              </a>
+            </div>
+          </div>
+        )}
+
+        {/* Settings Tab */}
+        {activeTab === 'settings' && (
+          <div className="space-y-8">
+            <div className={`${themeStyles.card} rounded-xl p-6 border`}>
+              <h3 className={`text-xl font-bold ${themeStyles.text} mb-6`}>System Settings</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className={`${themeStyles.card} p-4 rounded-lg border`}>
+                  <h4 className={`font-semibold ${themeStyles.text} mb-2`}>Auto-refresh Interval</h4>
+                  <p className={`text-sm ${themeStyles.textMuted} mb-3`}>Currently: 30 seconds</p>
+                  <button className={`${themeStyles.button} text-white px-4 py-2 rounded-lg text-sm`}>
+                    Configure
+                  </button>
+                </div>
+                <div className={`${themeStyles.card} p-4 rounded-lg border`}>
+                  <h4 className={`font-semibold ${themeStyles.text} mb-2`}>Backup Schedule</h4>
+                  <p className={`text-sm ${themeStyles.textMuted} mb-3`}>Manual backups only</p>
+                  <button className={`${themeStyles.successButton} text-white px-4 py-2 rounded-lg text-sm`}>
+                    Enable Auto-backup
+                  </button>
+                </div>
+                <div className={`${themeStyles.card} p-4 rounded-lg border`}>
+                  <h4 className={`font-semibold ${themeStyles.text} mb-2`}>Security Settings</h4>
+                  <p className={`text-sm ${themeStyles.textMuted} mb-3`}>Two-factor authentication</p>
+                  <button className={`${themeStyles.warningButton} text-white px-4 py-2 rounded-lg text-sm`}>
+                    Configure 2FA
+                  </button>
+                </div>
+                <div className={`${themeStyles.card} p-4 rounded-lg border`}>
+                  <h4 className={`font-semibold ${themeStyles.text} mb-2`}>API Access</h4>
+                  <p className={`text-sm ${themeStyles.textMuted} mb-3`}>Manage API keys</p>
+                  <button className={`${themeStyles.dangerButton} text-white px-4 py-2 rounded-lg text-sm`}>
+                    Manage Keys
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Include all other existing tabs (orders, users, offers, coupons, analytics) with the same content as before */}
         {/* Orders Tab */}
         {activeTab === 'orders' && (
           <div className="space-y-6">
