@@ -298,7 +298,9 @@ class SuperDatabase {
   }
 
   getAllOrders(): Order[] {
-    return Array.from(this.orders.values());
+    return Array.from(this.orders.values()).sort((a, b) => 
+      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
   }
 
   // Special Offers Management
@@ -327,6 +329,14 @@ class SuperDatabase {
       return true;
     }
     return false;
+  }
+
+  deleteSpecialOffer(offerId: string): boolean {
+    const deleted = this.specialOffers.delete(offerId);
+    if (deleted) {
+      this.saveToStorage();
+    }
+    return deleted;
   }
 
   getAllSpecialOffers(): SpecialOffer[] {
@@ -369,6 +379,36 @@ class SuperDatabase {
     return false;
   }
 
+  toggleCoupon(couponId: string): boolean {
+    const coupon = this.coupons.get(couponId);
+    if (coupon) {
+      coupon.isActive = !coupon.isActive;
+      this.coupons.set(couponId, coupon);
+      this.saveToStorage();
+      return true;
+    }
+    return false;
+  }
+
+  resetCoupon(couponId: string): boolean {
+    const coupon = this.coupons.get(couponId);
+    if (coupon) {
+      coupon.usedCount = 0;
+      this.coupons.set(couponId, coupon);
+      this.saveToStorage();
+      return true;
+    }
+    return false;
+  }
+
+  deleteCoupon(couponId: string): boolean {
+    const deleted = this.coupons.delete(couponId);
+    if (deleted) {
+      this.saveToStorage();
+    }
+    return deleted;
+  }
+
   getAllCoupons(): Coupon[] {
     return Array.from(this.coupons.values());
   }
@@ -394,6 +434,14 @@ class SuperDatabase {
       return true;
     }
     return false;
+  }
+
+  deletePlan(planId: string): boolean {
+    const deleted = this.plans.delete(planId);
+    if (deleted) {
+      this.saveToStorage();
+    }
+    return deleted;
   }
 
   getAllPlans(): Plan[] {
