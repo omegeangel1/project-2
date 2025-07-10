@@ -32,7 +32,8 @@ import {
   MessageCircle,
   Bell,
   Download,
-  Upload
+  Upload,
+  RotateCcw
 } from 'lucide-react';
 import { superDatabase, type User, type Order, type SpecialOffer, type Coupon, type Plan } from '../utils/database';
 
@@ -81,15 +82,31 @@ const AdminPage: React.FC<AdminPageProps> = ({ theme = 'dark', onLogout }) => {
 
   useEffect(() => {
     loadData();
+    // Set up auto-refresh every 5 seconds to catch new orders
+    const interval = setInterval(loadData, 5000);
+    return () => clearInterval(interval);
   }, []);
 
   const loadData = () => {
-    setUsers(superDatabase.getAllUsers());
-    setOrders(superDatabase.getAllOrders());
-    setSpecialOffers(superDatabase.getAllSpecialOffers());
-    setCoupons(superDatabase.getAllCoupons());
-    setPlans(superDatabase.getAllPlans());
-    setAnalytics(superDatabase.getAnalytics());
+    const allUsers = superDatabase.getAllUsers();
+    const allOrders = superDatabase.getAllOrders();
+    const allOffers = superDatabase.getAllSpecialOffers();
+    const allCoupons = superDatabase.getAllCoupons();
+    const allPlans = superDatabase.getAllPlans();
+    const analyticsData = superDatabase.getAnalytics();
+
+    setUsers(allUsers);
+    setOrders(allOrders);
+    setSpecialOffers(allOffers);
+    setCoupons(allCoupons);
+    setPlans(allPlans);
+    setAnalytics(analyticsData);
+
+    console.log('Admin data loaded:', {
+      users: allUsers.length,
+      orders: allOrders.length,
+      analytics: analyticsData
+    });
   };
 
   const getThemeClasses = () => {
@@ -189,6 +206,13 @@ const AdminPage: React.FC<AdminPageProps> = ({ theme = 'dark', onLogout }) => {
     }
   };
 
+  const handleDeleteSpecialOffer = (offerId: string) => {
+    if (confirm('Are you sure you want to delete this special offer?')) {
+      superDatabase.deleteSpecialOffer(offerId);
+      loadData();
+    }
+  };
+
   const handleCreateCoupon = () => {
     if (newCoupon.code && newCoupon.discountValue && newCoupon.expiryDate) {
       superDatabase.createCoupon({
@@ -207,6 +231,20 @@ const AdminPage: React.FC<AdminPageProps> = ({ theme = 'dark', onLogout }) => {
         usageLimit: 100,
         expiryDate: ''
       });
+      loadData();
+    }
+  };
+
+  const handleResetCoupon = (couponId: string) => {
+    if (confirm('Are you sure you want to reset this coupon usage count?')) {
+      superDatabase.resetCoupon(couponId);
+      loadData();
+    }
+  };
+
+  const handleDeleteCoupon = (couponId: string) => {
+    if (confirm('Are you sure you want to delete this coupon?')) {
+      superDatabase.deleteCoupon(couponId);
       loadData();
     }
   };
@@ -242,8 +280,20 @@ const AdminPage: React.FC<AdminPageProps> = ({ theme = 'dark', onLogout }) => {
     }
   };
 
+  const handleDeletePlan = (planId: string) => {
+    if (confirm('Are you sure you want to delete this plan?')) {
+      superDatabase.deletePlan(planId);
+      loadData();
+    }
+  };
+
   const toggleSpecialOffer = (offerId: string) => {
     superDatabase.toggleSpecialOffer(offerId);
+    loadData();
+  };
+
+  const toggleCoupon = (couponId: string) => {
+    superDatabase.toggleCoupon(couponId);
     loadData();
   };
 
@@ -285,6 +335,13 @@ const AdminPage: React.FC<AdminPageProps> = ({ theme = 'dark', onLogout }) => {
         <h2 className={`text-2xl font-bold ${themeStyles.text}`}>Admin Dashboard</h2>
         <div className="flex space-x-4">
           <button
+            onClick={loadData}
+            className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-semibold transition-colors flex items-center space-x-2"
+          >
+            <RefreshCw className="w-4 h-4" />
+            <span>Refresh</span>
+          </button>
+          <button
             onClick={exportData}
             className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold transition-colors flex items-center space-x-2"
           >
@@ -306,7 +363,7 @@ const AdminPage: React.FC<AdminPageProps> = ({ theme = 'dark', onLogout }) => {
           <div className="flex items-center justify-between">
             <div>
               <p className={`${themeStyles.textMuted} text-sm`}>Total Users</p>
-              <p className={`${themeStyles.text} text-2xl font-bold`}>{analytics.totalUsers}</p>
+              <p className={`${themeStyles.text} text-2xl font-bold`}>{analytics.totalUsers || 0}</p>
             </div>
             <Users className="w-8 h-8 text-blue-400" />
           </div>
@@ -316,7 +373,7 @@ const AdminPage: React.FC<AdminPageProps> = ({ theme = 'dark', onLogout }) => {
           <div className="flex items-center justify-between">
             <div>
               <p className={`${themeStyles.textMuted} text-sm`}>Premium Users</p>
-              <p className={`${themeStyles.text} text-2xl font-bold`}>{analytics.premiumUsers}</p>
+              <p className={`${themeStyles.text} text-2xl font-bold`}>{analytics.premiumUsers || 0}</p>
             </div>
             <Crown className="w-8 h-8 text-yellow-400" />
           </div>
@@ -326,7 +383,7 @@ const AdminPage: React.FC<AdminPageProps> = ({ theme = 'dark', onLogout }) => {
           <div className="flex items-center justify-between">
             <div>
               <p className={`${themeStyles.textMuted} text-sm`}>Total Orders</p>
-              <p className={`${themeStyles.text} text-2xl font-bold`}>{analytics.totalOrders}</p>
+              <p className={`${themeStyles.text} text-2xl font-bold`}>{analytics.totalOrders || 0}</p>
             </div>
             <ShoppingCart className="w-8 h-8 text-green-400" />
           </div>
@@ -336,7 +393,7 @@ const AdminPage: React.FC<AdminPageProps> = ({ theme = 'dark', onLogout }) => {
           <div className="flex items-center justify-between">
             <div>
               <p className={`${themeStyles.textMuted} text-sm`}>Pending Orders</p>
-              <p className={`${themeStyles.text} text-2xl font-bold`}>{analytics.pendingOrders}</p>
+              <p className={`${themeStyles.text} text-2xl font-bold`}>{analytics.pendingOrders || 0}</p>
             </div>
             <Calendar className="w-8 h-8 text-orange-400" />
           </div>
@@ -401,6 +458,11 @@ const AdminPage: React.FC<AdminPageProps> = ({ theme = 'dark', onLogout }) => {
               </span>
             </div>
           ))}
+          {orders.length === 0 && (
+            <div className={`text-center py-4 ${themeStyles.textMuted}`}>
+              No orders found
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -597,12 +659,22 @@ const AdminPage: React.FC<AdminPageProps> = ({ theme = 'dark', onLogout }) => {
               }`}>
                 {offer.type}
               </span>
-              <button
-                onClick={() => toggleSpecialOffer(offer.id)}
-                className={`p-1 rounded ${offer.isActive ? 'text-green-400' : 'text-gray-400'}`}
-              >
-                {offer.isActive ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-              </button>
+              <div className="flex space-x-2">
+                <button
+                  onClick={() => toggleSpecialOffer(offer.id)}
+                  className={`p-1 rounded ${offer.isActive ? 'text-green-400' : 'text-gray-400'}`}
+                  title={offer.isActive ? 'Deactivate' : 'Activate'}
+                >
+                  {offer.isActive ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                </button>
+                <button
+                  onClick={() => handleDeleteSpecialOffer(offer.id)}
+                  className="p-1 rounded text-red-400 hover:text-red-300"
+                  title="Delete Offer"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
             </div>
             <h4 className={`font-semibold ${themeStyles.text} mb-2`}>{offer.planName}</h4>
             <div className="space-y-1">
@@ -679,6 +751,7 @@ const AdminPage: React.FC<AdminPageProps> = ({ theme = 'dark', onLogout }) => {
                 <th className={`px-6 py-3 text-left text-xs font-medium ${themeStyles.textMuted} uppercase tracking-wider`}>Usage</th>
                 <th className={`px-6 py-3 text-left text-xs font-medium ${themeStyles.textMuted} uppercase tracking-wider`}>Expiry</th>
                 <th className={`px-6 py-3 text-left text-xs font-medium ${themeStyles.textMuted} uppercase tracking-wider`}>Status</th>
+                <th className={`px-6 py-3 text-left text-xs font-medium ${themeStyles.textMuted} uppercase tracking-wider`}>Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/10">
@@ -702,6 +775,35 @@ const AdminPage: React.FC<AdminPageProps> = ({ theme = 'dark', onLogout }) => {
                     }`}>
                       {coupon.isActive ? 'Active' : 'Inactive'}
                     </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <div className="flex space-x-2">
+                      <button
+                        onClick={() => toggleCoupon(coupon.id)}
+                        className={`px-2 py-1 rounded text-xs transition-colors ${
+                          coupon.isActive 
+                            ? 'bg-yellow-500 hover:bg-yellow-600 text-white' 
+                            : 'bg-green-500 hover:bg-green-600 text-white'
+                        }`}
+                        title={coupon.isActive ? 'Deactivate' : 'Activate'}
+                      >
+                        {coupon.isActive ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+                      </button>
+                      <button
+                        onClick={() => handleResetCoupon(coupon.id)}
+                        className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs transition-colors"
+                        title="Reset Usage Count"
+                      >
+                        <RotateCcw className="w-3 h-3" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteCoupon(coupon.id)}
+                        className="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs transition-colors"
+                        title="Delete Coupon"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -828,23 +930,35 @@ const AdminPage: React.FC<AdminPageProps> = ({ theme = 'dark', onLogout }) => {
                           <button
                             onClick={handleUpdatePlan}
                             className="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded text-xs transition-colors"
+                            title="Save Changes"
                           >
                             <Save className="w-3 h-3" />
                           </button>
                           <button
                             onClick={() => setEditingPlan(null)}
                             className="bg-gray-500 hover:bg-gray-600 text-white px-2 py-1 rounded text-xs transition-colors"
+                            title="Cancel"
                           >
                             <X className="w-3 h-3" />
                           </button>
                         </>
                       ) : (
-                        <button
-                          onClick={() => setEditingPlan(plan)}
-                          className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs transition-colors"
-                        >
-                          <Edit className="w-3 h-3" />
-                        </button>
+                        <>
+                          <button
+                            onClick={() => setEditingPlan(plan)}
+                            className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs transition-colors"
+                            title="Edit Plan"
+                          >
+                            <Edit className="w-3 h-3" />
+                          </button>
+                          <button
+                            onClick={() => handleDeletePlan(plan.id)}
+                            className="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs transition-colors"
+                            title="Delete Plan"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </>
                       )}
                     </div>
                   </td>
