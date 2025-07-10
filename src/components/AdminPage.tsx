@@ -17,7 +17,10 @@ import {
   DollarSign,
   TrendingUp,
   Eye,
-  EyeOff
+  EyeOff,
+  Save,
+  RefreshCw,
+  AlertTriangle
 } from 'lucide-react';
 import { superDatabase, type User, type Order, type SpecialOffer, type Coupon, type Plan } from '../utils/database';
 
@@ -52,6 +55,16 @@ const AdminPage: React.FC<AdminPageProps> = ({ theme = 'dark', onBack }) => {
     expiryDate: ''
   });
 
+  const [newPlan, setNewPlan] = useState({
+    type: 'minecraft',
+    category: 'budget',
+    name: '',
+    price: '',
+    specs: {},
+    isActive: true
+  });
+
+  const [editingPlan, setEditingPlan] = useState<Plan | null>(null);
   const [orderIdToConfirm, setOrderIdToConfirm] = useState('');
 
   useEffect(() => {
@@ -122,6 +135,20 @@ const AdminPage: React.FC<AdminPageProps> = ({ theme = 'dark', onBack }) => {
     }
   };
 
+  const handleResetOrder = (orderId: string) => {
+    if (confirm('Are you sure you want to reset this order to pending status?')) {
+      superDatabase.resetOrder(orderId);
+      loadData();
+    }
+  };
+
+  const handleDeleteOrder = (orderId: string) => {
+    if (confirm('Are you sure you want to delete this order? This action cannot be undone.')) {
+      superDatabase.deleteOrder(orderId);
+      loadData();
+    }
+  };
+
   const handleCreateSpecialOffer = () => {
     if (newOffer.planName && newOffer.originalPrice && newOffer.discountPrice) {
       const discountPercentage = Math.round(
@@ -168,6 +195,37 @@ const AdminPage: React.FC<AdminPageProps> = ({ theme = 'dark', onBack }) => {
         usageLimit: 100,
         expiryDate: ''
       });
+      loadData();
+    }
+  };
+
+  const handleCreatePlan = () => {
+    if (newPlan.name && newPlan.price) {
+      superDatabase.createPlan({
+        type: newPlan.type as 'minecraft' | 'vps' | 'domain',
+        category: newPlan.category,
+        name: newPlan.name,
+        price: newPlan.price,
+        specs: newPlan.specs,
+        isActive: newPlan.isActive
+      });
+
+      setNewPlan({
+        type: 'minecraft',
+        category: 'budget',
+        name: '',
+        price: '',
+        specs: {},
+        isActive: true
+      });
+      loadData();
+    }
+  };
+
+  const handleUpdatePlan = () => {
+    if (editingPlan) {
+      superDatabase.updatePlan(editingPlan.id, editingPlan);
+      setEditingPlan(null);
       loadData();
     }
   };
@@ -329,6 +387,7 @@ const AdminPage: React.FC<AdminPageProps> = ({ theme = 'dark', onBack }) => {
                 <th className={`px-6 py-3 text-left text-xs font-medium ${themeStyles.textMuted} uppercase tracking-wider`}>Price</th>
                 <th className={`px-6 py-3 text-left text-xs font-medium ${themeStyles.textMuted} uppercase tracking-wider`}>Status</th>
                 <th className={`px-6 py-3 text-left text-xs font-medium ${themeStyles.textMuted} uppercase tracking-wider`}>Date</th>
+                <th className={`px-6 py-3 text-left text-xs font-medium ${themeStyles.textMuted} uppercase tracking-wider`}>Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/10">
@@ -359,6 +418,24 @@ const AdminPage: React.FC<AdminPageProps> = ({ theme = 'dark', onBack }) => {
                   </td>
                   <td className={`px-6 py-4 whitespace-nowrap text-sm ${themeStyles.textSecondary}`}>
                     {new Date(order.createdAt).toLocaleDateString()}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <div className="flex space-x-2">
+                      <button
+                        onClick={() => handleResetOrder(order.id)}
+                        className="bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 rounded text-xs transition-colors"
+                        title="Reset to Pending"
+                      >
+                        <RefreshCw className="w-3 h-3" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteOrder(order.id)}
+                        className="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs transition-colors"
+                        title="Delete Order"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -547,6 +624,58 @@ const AdminPage: React.FC<AdminPageProps> = ({ theme = 'dark', onBack }) => {
     <div className="space-y-6">
       <h2 className={`text-2xl font-bold ${themeStyles.text} mb-6`}>Plan Management</h2>
       
+      {/* Create New Plan */}
+      <div className={`${themeStyles.card} p-6 rounded-xl border`}>
+        <h3 className={`text-lg font-semibold ${themeStyles.text} mb-4`}>Create New Plan</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+          <select
+            value={newPlan.type}
+            onChange={(e) => setNewPlan({...newPlan, type: e.target.value})}
+            className={`${themeStyles.input} border rounded-lg px-3 py-2`}
+          >
+            <option value="minecraft">Minecraft</option>
+            <option value="vps">VPS</option>
+            <option value="domain">Domain</option>
+          </select>
+          <input
+            type="text"
+            placeholder="Category"
+            value={newPlan.category}
+            onChange={(e) => setNewPlan({...newPlan, category: e.target.value})}
+            className={`${themeStyles.input} border rounded-lg px-3 py-2`}
+          />
+          <input
+            type="text"
+            placeholder="Plan Name"
+            value={newPlan.name}
+            onChange={(e) => setNewPlan({...newPlan, name: e.target.value})}
+            className={`${themeStyles.input} border rounded-lg px-3 py-2`}
+          />
+          <input
+            type="text"
+            placeholder="Price"
+            value={newPlan.price}
+            onChange={(e) => setNewPlan({...newPlan, price: e.target.value})}
+            className={`${themeStyles.input} border rounded-lg px-3 py-2`}
+          />
+          <select
+            value={newPlan.isActive.toString()}
+            onChange={(e) => setNewPlan({...newPlan, isActive: e.target.value === 'true'})}
+            className={`${themeStyles.input} border rounded-lg px-3 py-2`}
+          >
+            <option value="true">Active</option>
+            <option value="false">Inactive</option>
+          </select>
+          <button
+            onClick={handleCreatePlan}
+            className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-semibold transition-colors"
+          >
+            Create Plan
+          </button>
+        </div>
+      </div>
+
+      {/* Existing Plans */}
       <div className={`${themeStyles.card} rounded-xl border overflow-hidden`}>
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -557,6 +686,7 @@ const AdminPage: React.FC<AdminPageProps> = ({ theme = 'dark', onBack }) => {
                 <th className={`px-6 py-3 text-left text-xs font-medium ${themeStyles.textMuted} uppercase tracking-wider`}>Name</th>
                 <th className={`px-6 py-3 text-left text-xs font-medium ${themeStyles.textMuted} uppercase tracking-wider`}>Price</th>
                 <th className={`px-6 py-3 text-left text-xs font-medium ${themeStyles.textMuted} uppercase tracking-wider`}>Status</th>
+                <th className={`px-6 py-3 text-left text-xs font-medium ${themeStyles.textMuted} uppercase tracking-wider`}>Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/10">
@@ -569,10 +699,28 @@ const AdminPage: React.FC<AdminPageProps> = ({ theme = 'dark', onBack }) => {
                     {plan.category}
                   </td>
                   <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${themeStyles.text}`}>
-                    {plan.name}
+                    {editingPlan?.id === plan.id ? (
+                      <input
+                        type="text"
+                        value={editingPlan.name}
+                        onChange={(e) => setEditingPlan({...editingPlan, name: e.target.value})}
+                        className={`${themeStyles.input} border rounded px-2 py-1 text-sm w-full`}
+                      />
+                    ) : (
+                      plan.name
+                    )}
                   </td>
                   <td className={`px-6 py-4 whitespace-nowrap text-sm ${themeStyles.textSecondary}`}>
-                    {plan.price}
+                    {editingPlan?.id === plan.id ? (
+                      <input
+                        type="text"
+                        value={editingPlan.price}
+                        onChange={(e) => setEditingPlan({...editingPlan, price: e.target.value})}
+                        className={`${themeStyles.input} border rounded px-2 py-1 text-sm w-full`}
+                      />
+                    ) : (
+                      plan.price
+                    )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
@@ -580,6 +728,33 @@ const AdminPage: React.FC<AdminPageProps> = ({ theme = 'dark', onBack }) => {
                     }`}>
                       {plan.isActive ? 'Active' : 'Inactive'}
                     </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <div className="flex space-x-2">
+                      {editingPlan?.id === plan.id ? (
+                        <>
+                          <button
+                            onClick={handleUpdatePlan}
+                            className="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded text-xs transition-colors"
+                          >
+                            <Save className="w-3 h-3" />
+                          </button>
+                          <button
+                            onClick={() => setEditingPlan(null)}
+                            className="bg-gray-500 hover:bg-gray-600 text-white px-2 py-1 rounded text-xs transition-colors"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </>
+                      ) : (
+                        <button
+                          onClick={() => setEditingPlan(plan)}
+                          className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs transition-colors"
+                        >
+                          <Edit className="w-3 h-3" />
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}

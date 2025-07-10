@@ -803,15 +803,16 @@ function App() {
             {/* Special Offers Banner */}
             {specialOffers.length > 0 && (
               <div className="w-full mb-8">
-                <div className="bg-gradient-to-r from-red-500 to-pink-500 text-white p-4 rounded-xl text-center animate-pulse">
+                <div className="bg-gradient-to-r from-red-500 to-pink-500 text-white p-4 rounded-xl text-center animate-pulse shadow-lg">
                   <h3 className="text-lg font-bold mb-2">🔥 Special Offers Available!</h3>
                   <div className="flex flex-wrap justify-center gap-4">
                     {specialOffers.slice(0, 3).map((offer, index) => (
                       <div key={index} className="bg-white/20 px-3 py-1 rounded-full text-sm">
-                        {offer.planName}: <span className="line-through">{offer.originalPrice}</span> → <span className="font-bold">{offer.discountPrice}</span>
+                        <span className="font-semibold">{offer.planName}</span>: <span className="line-through opacity-75">{offer.originalPrice}</span> → <span className="font-bold text-yellow-300">{offer.discountPrice}</span> <span className="text-xs">({offer.discountPercentage}% OFF)</span>
                       </div>
                     ))}
                   </div>
+                  <p className="text-xs mt-2 opacity-90">Limited time offers! Get them before they expire.</p>
                 </div>
               </div>
             )}

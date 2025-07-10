@@ -83,6 +83,7 @@ class SuperDatabase {
   constructor() {
     this.loadFromStorage();
     this.initializeDefaultPlans();
+    this.initializeDefaultOffers();
   }
 
   private loadFromStorage() {
@@ -141,14 +142,50 @@ class SuperDatabase {
         // Minecraft Budget Plans
         { id: 'mc-budget-dirt', type: 'minecraft', category: 'budget', name: 'Dirt Plan', price: '₹49/mo', specs: { ram: '2GB', cpu: '100% CPU', storage: '5GB SSD' }, isActive: true },
         { id: 'mc-budget-wood', type: 'minecraft', category: 'budget', name: 'Wood Plan', price: '₹99/mo', specs: { ram: '4GB', cpu: '150% CPU', storage: '10GB SSD' }, isActive: true },
+        { id: 'mc-budget-stone', type: 'minecraft', category: 'budget', name: 'Stone Plan', price: '₹159/mo', specs: { ram: '6GB', cpu: '200% CPU', storage: '15GB SSD' }, isActive: true },
         // VPS Cheap Plans
         { id: 'vps-cheap-stone', type: 'vps', category: 'cheap', name: 'Stone Plan', price: '₹270/mo', specs: { ram: '2GB', cpu: '1 vCPU', storage: '20GB SSD' }, isActive: true },
+        { id: 'vps-cheap-iron', type: 'vps', category: 'cheap', name: 'Iron Plan', price: '₹455/mo', specs: { ram: '4GB', cpu: '2 vCPU', storage: '40GB SSD' }, isActive: true },
         // Domain Plans
         { id: 'domain-com', type: 'domain', category: 'popular', name: '.com', price: '₹999/year', specs: { tld: '.com' }, isActive: true },
+        { id: 'domain-in', type: 'domain', category: 'popular', name: '.in', price: '₹699/year', specs: { tld: '.in' }, isActive: true },
       ];
 
       defaultPlans.forEach(plan => {
         this.plans.set(plan.id, plan as Plan);
+      });
+      this.saveToStorage();
+    }
+  }
+
+  private initializeDefaultOffers() {
+    // Add some default special offers for demonstration
+    if (this.specialOffers.size === 0) {
+      const defaultOffers = [
+        {
+          id: 'offer-1',
+          type: 'minecraft' as const,
+          planName: 'Wood Plan',
+          originalPrice: '₹99',
+          discountPrice: '₹79',
+          discountPercentage: 20,
+          isActive: true,
+          createdAt: new Date().toISOString()
+        },
+        {
+          id: 'offer-2',
+          type: 'vps' as const,
+          planName: 'Stone Plan',
+          originalPrice: '₹270',
+          discountPrice: '₹199',
+          discountPercentage: 26,
+          isActive: true,
+          createdAt: new Date().toISOString()
+        }
+      ];
+
+      defaultOffers.forEach(offer => {
+        this.specialOffers.set(offer.id, offer);
       });
       this.saveToStorage();
     }
@@ -237,6 +274,25 @@ class SuperDatabase {
     return false;
   }
 
+  resetOrder(orderId: string): boolean {
+    const order = this.orders.get(orderId);
+    if (order) {
+      order.status = 'pending';
+      this.orders.set(orderId, order);
+      this.saveToStorage();
+      return true;
+    }
+    return false;
+  }
+
+  deleteOrder(orderId: string): boolean {
+    const deleted = this.orders.delete(orderId);
+    if (deleted) {
+      this.saveToStorage();
+    }
+    return deleted;
+  }
+
   getAllOrders(): Order[] {
     return Array.from(this.orders.values());
   }
@@ -314,6 +370,17 @@ class SuperDatabase {
   }
 
   // Plan Management
+  createPlan(planData: Omit<Plan, 'id'>): Plan {
+    const plan: Plan = {
+      ...planData,
+      id: this.generateId()
+    };
+
+    this.plans.set(plan.id, plan);
+    this.saveToStorage();
+    return plan;
+  }
+
   updatePlan(planId: string, updates: Partial<Plan>): boolean {
     const plan = this.plans.get(planId);
     if (plan) {
