@@ -39,8 +39,7 @@ import VPSPage from './components/VPSPage';
 import VPSOrderForm from './components/VPSOrderForm';
 import DiscordLogin from './components/DiscordLogin';
 import UserProfile from './components/UserProfile';
-import AdminLogin from './components/AdminLogin';
-import AdminPage from './components/AdminPage';
+import AdminRouter from './components/AdminRouter';
 import { authManager, type AuthState } from './utils/auth';
 import { superDatabase } from './utils/database';
 
@@ -60,7 +59,6 @@ function App() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [authState, setAuthState] = useState<AuthState>(authManager.getAuthState());
-  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
   const [specialOffers, setSpecialOffers] = useState<any[]>([]);
 
   useEffect(() => {
@@ -97,6 +95,24 @@ function App() {
     const interval = setInterval(loadOffers, 30000);
     return () => clearInterval(interval);
   }, []);
+
+  // Check for admin route
+  useEffect(() => {
+    const path = window.location.pathname;
+    if (path === '/admin') {
+      setCurrentView('admin');
+    }
+  }, []);
+
+  // Handle route changes
+  const handleRouteChange = (route: string) => {
+    if (route === 'admin') {
+      window.history.pushState({}, '', '/admin');
+    } else {
+      window.history.pushState({}, '', '/');
+    }
+    setCurrentView(route);
+  };
 
   const domainExtensions = [
     { tld: '.com', price: '₹999' },
@@ -209,24 +225,9 @@ function App() {
     />;
   }
 
-  if (currentView === 'admin-login') {
-    return <AdminLogin 
+  if (currentView === 'admin') {
+    return <AdminRouter 
       theme={theme}
-      onLoginSuccess={() => {
-        setIsAdminAuthenticated(true);
-        setCurrentView('admin');
-      }}
-      onBack={() => setCurrentView('home')}
-    />;
-  }
-
-  if (currentView === 'admin' && isAdminAuthenticated) {
-    return <AdminPage 
-      theme={theme}
-      onBack={() => {
-        setCurrentView('home');
-        setIsAdminAuthenticated(false);
-      }}
     />;
   }
 
@@ -351,7 +352,7 @@ function App() {
                 VPS
               </button>
               <button 
-                onClick={() => setCurrentView('admin-login')}
+                onClick={() => handleRouteChange('admin')}
                 className={`${themeStyles.textSecondary} hover:text-red-400 transition-colors font-medium`}
               >
                 Admin
@@ -455,7 +456,7 @@ function App() {
                 </button>
                 <button 
                   onClick={() => {
-                    setCurrentView('admin-login');
+                    handleRouteChange('admin');
                     setIsMobileMenuOpen(false);
                   }}
                   className={`${themeStyles.textSecondary} hover:text-red-400 transition-colors font-medium text-left`}

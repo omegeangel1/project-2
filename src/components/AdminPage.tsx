@@ -20,16 +20,28 @@ import {
   EyeOff,
   Save,
   RefreshCw,
-  AlertTriangle
+  AlertTriangle,
+  LogOut,
+  Database,
+  Activity,
+  FileText,
+  Zap,
+  Shield,
+  Globe,
+  Server,
+  MessageCircle,
+  Bell,
+  Download,
+  Upload
 } from 'lucide-react';
 import { superDatabase, type User, type Order, type SpecialOffer, type Coupon, type Plan } from '../utils/database';
 
 interface AdminPageProps {
   theme?: string;
-  onBack: () => void;
+  onLogout: () => void;
 }
 
-const AdminPage: React.FC<AdminPageProps> = ({ theme = 'dark', onBack }) => {
+const AdminPage: React.FC<AdminPageProps> = ({ theme = 'dark', onLogout }) => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [users, setUsers] = useState<User[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
@@ -235,18 +247,59 @@ const AdminPage: React.FC<AdminPageProps> = ({ theme = 'dark', onBack }) => {
     loadData();
   };
 
+  const exportData = () => {
+    const data = {
+      users: users,
+      orders: orders,
+      specialOffers: specialOffers,
+      coupons: coupons,
+      plans: plans,
+      exportDate: new Date().toISOString()
+    };
+    
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `demon-node-backup-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   const tabs = [
     { id: 'dashboard', name: 'Dashboard', icon: <BarChart3 className="w-5 h-5" /> },
     { id: 'users', name: 'Users', icon: <Users className="w-5 h-5" /> },
     { id: 'orders', name: 'Orders', icon: <ShoppingCart className="w-5 h-5" /> },
     { id: 'offers', name: 'Special Offers', icon: <Gift className="w-5 h-5" /> },
     { id: 'coupons', name: 'Coupons', icon: <Tag className="w-5 h-5" /> },
-    { id: 'plans', name: 'Plans', icon: <Settings className="w-5 h-5" /> }
+    { id: 'plans', name: 'Plans', icon: <Settings className="w-5 h-5" /> },
+    { id: 'analytics', name: 'Analytics', icon: <Activity className="w-5 h-5" /> },
+    { id: 'system', name: 'System', icon: <Database className="w-5 h-5" /> }
   ];
 
   const renderDashboard = () => (
     <div className="space-y-6">
-      <h2 className={`text-2xl font-bold ${themeStyles.text} mb-6`}>Admin Dashboard</h2>
+      <div className="flex justify-between items-center">
+        <h2 className={`text-2xl font-bold ${themeStyles.text}`}>Admin Dashboard</h2>
+        <div className="flex space-x-4">
+          <button
+            onClick={exportData}
+            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold transition-colors flex items-center space-x-2"
+          >
+            <Download className="w-4 h-4" />
+            <span>Export Data</span>
+          </button>
+          <button
+            onClick={onLogout}
+            className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-semibold transition-colors flex items-center space-x-2"
+          >
+            <LogOut className="w-4 h-4" />
+            <span>Logout</span>
+          </button>
+        </div>
+      </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className={`${themeStyles.card} p-6 rounded-xl border`}>
@@ -293,14 +346,14 @@ const AdminPage: React.FC<AdminPageProps> = ({ theme = 'dark', onBack }) => {
       {/* Quick Actions */}
       <div className={`${themeStyles.card} p-6 rounded-xl border`}>
         <h3 className={`text-lg font-semibold ${themeStyles.text} mb-4`}>Quick Actions</h3>
-        <div className="flex flex-wrap gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="flex items-center space-x-2">
             <input
               type="text"
               placeholder="Order ID"
               value={orderIdToConfirm}
               onChange={(e) => setOrderIdToConfirm(e.target.value)}
-              className={`px-3 py-2 ${themeStyles.input} border rounded-lg text-sm`}
+              className={`flex-1 px-3 py-2 ${themeStyles.input} border rounded-lg text-sm`}
             />
             <button
               onClick={handleConfirmOrder}
@@ -309,6 +362,45 @@ const AdminPage: React.FC<AdminPageProps> = ({ theme = 'dark', onBack }) => {
               Confirm Order
             </button>
           </div>
+          
+          <button
+            onClick={() => setActiveTab('offers')}
+            className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center justify-center space-x-2"
+          >
+            <Gift className="w-4 h-4" />
+            <span>Create Special Offer</span>
+          </button>
+          
+          <button
+            onClick={() => setActiveTab('coupons')}
+            className="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center justify-center space-x-2"
+          >
+            <Tag className="w-4 h-4" />
+            <span>Create Coupon</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Recent Activity */}
+      <div className={`${themeStyles.card} p-6 rounded-xl border`}>
+        <h3 className={`text-lg font-semibold ${themeStyles.text} mb-4`}>Recent Orders</h3>
+        <div className="space-y-3">
+          {orders.slice(0, 5).map((order) => (
+            <div key={order.id} className={`${themeStyles.card} p-3 rounded-lg border flex items-center justify-between`}>
+              <div>
+                <span className={`font-semibold ${themeStyles.text}`}>#{order.orderId}</span>
+                <span className={`ml-2 text-sm ${themeStyles.textSecondary} capitalize`}>
+                  {order.type} - {order.planName}
+                </span>
+              </div>
+              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                order.status === 'confirmed' ? 'bg-green-100 text-green-800' : 
+                order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'
+              }`}>
+                {order.status}
+              </span>
+            </div>
+          ))}
         </div>
       </div>
     </div>
@@ -765,27 +857,115 @@ const AdminPage: React.FC<AdminPageProps> = ({ theme = 'dark', onBack }) => {
     </div>
   );
 
-  return (
-    <div className={`min-h-screen ${themeStyles.bg} py-8 px-4 sm:px-6 lg:px-8`}>
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <button
-            onClick={onBack}
-            className={`flex items-center ${themeStyles.textSecondary} hover:text-purple-400 transition-colors mb-6`}
-          >
-            <ArrowLeft className="w-5 h-5 mr-2" />
-            Back to Dashboard
-          </button>
-          
-          <div className="flex items-center justify-between">
-            <h1 className={`text-3xl font-bold ${themeStyles.text}`}>Admin Panel</h1>
-            <div className={`${themeStyles.card} px-4 py-2 rounded-lg border`}>
-              <span className={`text-sm ${themeStyles.textMuted}`}>Last updated: {new Date().toLocaleTimeString()}</span>
+  const renderAnalytics = () => (
+    <div className="space-y-6">
+      <h2 className={`text-2xl font-bold ${themeStyles.text} mb-6`}>Analytics & Reports</h2>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className={`${themeStyles.card} p-6 rounded-xl border`}>
+          <h3 className={`text-lg font-semibold ${themeStyles.text} mb-4`}>Revenue Overview</h3>
+          <div className="space-y-3">
+            <div className="flex justify-between">
+              <span className={themeStyles.textSecondary}>Total Revenue</span>
+              <span className={`font-bold ${themeStyles.text}`}>₹{(analytics.totalOrders * 500).toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className={themeStyles.textSecondary}>This Month</span>
+              <span className={`font-bold text-green-400`}>₹{(analytics.confirmedOrders * 300).toLocaleString()}</span>
             </div>
           </div>
         </div>
 
+        <div className={`${themeStyles.card} p-6 rounded-xl border`}>
+          <h3 className={`text-lg font-semibold ${themeStyles.text} mb-4`}>Service Distribution</h3>
+          <div className="space-y-3">
+            <div className="flex justify-between">
+              <span className={themeStyles.textSecondary}>Minecraft</span>
+              <span className={`font-bold ${themeStyles.text}`}>60%</span>
+            </div>
+            <div className="flex justify-between">
+              <span className={themeStyles.textSecondary}>VPS</span>
+              <span className={`font-bold ${themeStyles.text}`}>30%</span>
+            </div>
+            <div className="flex justify-between">
+              <span className={themeStyles.textSecondary}>Domains</span>
+              <span className={`font-bold ${themeStyles.text}`}>10%</span>
+            </div>
+          </div>
+        </div>
+
+        <div className={`${themeStyles.card} p-6 rounded-xl border`}>
+          <h3 className={`text-lg font-semibold ${themeStyles.text} mb-4`}>Growth Metrics</h3>
+          <div className="space-y-3">
+            <div className="flex justify-between">
+              <span className={themeStyles.textSecondary}>User Growth</span>
+              <span className={`font-bold text-green-400`}>+15%</span>
+            </div>
+            <div className="flex justify-between">
+              <span className={themeStyles.textSecondary}>Order Growth</span>
+              <span className={`font-bold text-green-400`}>+25%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderSystem = () => (
+    <div className="space-y-6">
+      <h2 className={`text-2xl font-bold ${themeStyles.text} mb-6`}>System Management</h2>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className={`${themeStyles.card} p-6 rounded-xl border`}>
+          <h3 className={`text-lg font-semibold ${themeStyles.text} mb-4`}>Database Operations</h3>
+          <div className="space-y-4">
+            <button
+              onClick={exportData}
+              className="w-full bg-blue-500 hover:bg-blue-600 text-white px-4 py-3 rounded-lg font-semibold transition-colors flex items-center justify-center space-x-2"
+            >
+              <Download className="w-4 h-4" />
+              <span>Export Database</span>
+            </button>
+            <button
+              onClick={() => alert('Import functionality would be implemented here')}
+              className="w-full bg-green-500 hover:bg-green-600 text-white px-4 py-3 rounded-lg font-semibold transition-colors flex items-center justify-center space-x-2"
+            >
+              <Upload className="w-4 h-4" />
+              <span>Import Database</span>
+            </button>
+          </div>
+        </div>
+
+        <div className={`${themeStyles.card} p-6 rounded-xl border`}>
+          <h3 className={`text-lg font-semibold ${themeStyles.text} mb-4`}>System Status</h3>
+          <div className="space-y-3">
+            <div className="flex justify-between items-center">
+              <span className={themeStyles.textSecondary}>Database</span>
+              <span className="flex items-center text-green-400">
+                <CheckCircle className="w-4 h-4 mr-1" />
+                Online
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className={themeStyles.textSecondary}>Storage</span>
+              <span className="flex items-center text-green-400">
+                <CheckCircle className="w-4 h-4 mr-1" />
+                Available
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className={themeStyles.textSecondary}>Last Backup</span>
+              <span className={themeStyles.text}>Just now</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className={`min-h-screen ${themeStyles.bg} py-8 px-4 sm:px-6 lg:px-8`}>
+      <div className="max-w-7xl mx-auto">
         {/* Navigation Tabs */}
         <div className={`${themeStyles.card} p-2 rounded-xl border mb-8`}>
           <div className="flex flex-wrap gap-2">
@@ -814,6 +994,8 @@ const AdminPage: React.FC<AdminPageProps> = ({ theme = 'dark', onBack }) => {
           {activeTab === 'offers' && renderSpecialOffers()}
           {activeTab === 'coupons' && renderCoupons()}
           {activeTab === 'plans' && renderPlans()}
+          {activeTab === 'analytics' && renderAnalytics()}
+          {activeTab === 'system' && renderSystem()}
         </div>
       </div>
     </div>

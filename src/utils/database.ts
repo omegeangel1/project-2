@@ -275,10 +275,10 @@ class SuperDatabase {
   }
 
   resetOrder(orderId: string): boolean {
-    const order = this.orders.get(orderId);
+    const order = Array.from(this.orders.values()).find(o => o.orderId === orderId || o.id === orderId);
     if (order) {
       order.status = 'pending';
-      this.orders.set(orderId, order);
+      this.orders.set(order.id, order);
       this.saveToStorage();
       return true;
     }
@@ -286,7 +286,11 @@ class SuperDatabase {
   }
 
   deleteOrder(orderId: string): boolean {
-    const deleted = this.orders.delete(orderId);
+    // Find order by orderId or id
+    const order = Array.from(this.orders.values()).find(o => o.orderId === orderId || o.id === orderId);
+    if (!order) return false;
+    
+    const deleted = this.orders.delete(order.id);
     if (deleted) {
       this.saveToStorage();
     }
