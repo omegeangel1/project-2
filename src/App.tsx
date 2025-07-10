@@ -351,12 +351,6 @@ function App() {
               >
                 VPS
               </button>
-              <button 
-                onClick={() => handleRouteChange('admin')}
-                className={`${themeStyles.textSecondary} hover:text-red-400 transition-colors font-medium`}
-              >
-                Admin
-              </button>
               <a 
                 href="https://discord.gg/Qy6tuNJmwJ" 
                 target="_blank" 
@@ -453,15 +447,6 @@ function App() {
                   className={`${currentView === 'vps' ? 'text-purple-400' : themeStyles.textSecondary} hover:text-purple-400 transition-colors font-medium text-left`}
                 >
                   VPS
-                </button>
-                <button 
-                  onClick={() => {
-                    handleRouteChange('admin');
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className={`${themeStyles.textSecondary} hover:text-red-400 transition-colors font-medium text-left`}
-                >
-                  Admin
                 </button>
                 <a 
                   href="https://discord.gg/Qy6tuNJmwJ" 
