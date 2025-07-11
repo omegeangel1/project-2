@@ -39,7 +39,6 @@ import VPSPage from './components/VPSPage';
 import VPSOrderForm from './components/VPSOrderForm';
 import DiscordLogin from './components/DiscordLogin';
 import UserProfile from './components/UserProfile';
-import AdminRouter from './components/AdminRouter';
 import { authManager, type AuthState } from './utils/auth';
 import { superDatabase } from './utils/database';
 
@@ -74,38 +73,6 @@ function App() {
     return unsubscribe;
   }, []);
 
-  // Initialize user in database when authenticated
-  useEffect(() => {
-    if (authState.isAuthenticated && authState.user) {
-      let user = superDatabase.getUserByDiscordId(authState.user.id);
-      if (!user) {
-        user = superDatabase.createUser(authState.user);
-      }
-    }
-  }, [authState]);
-
-  // Load special offers
-  useEffect(() => {
-    const loadOffers = () => {
-      setSpecialOffers(getSpecialOffers());
-    };
-    
-    loadOffers();
-    // Refresh offers every 30 seconds
-    const interval = setInterval(loadOffers, 30000);
-    return () => clearInterval(interval);
-  }, []);
-
-  // Check for admin route
-  useEffect(() => {
-    const path = window.location.pathname;
-    if (path === '/admin' || path.startsWith('/admin')) {
-      setCurrentView('admin');
-    }
-  }, []);
-
-  // Handle route changes
-  const handleRouteChange = (route: string) => {
     if (route === 'admin') {
       window.history.pushState({}, '', '/admin');
     } else {
@@ -239,11 +206,6 @@ function App() {
     />;
   }
 
-  if (currentView === 'admin') {
-    return <AdminRouter 
-      theme={theme}
-    />;
-  }
 
   const ThemeToggle = () => (
     <div className="flex items-center space-x-2">
