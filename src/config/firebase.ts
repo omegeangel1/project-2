@@ -4,13 +4,13 @@ import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
 const firebaseConfig = {
-  // Demo configuration - Replace with your actual Firebase config
-  apiKey: "demo-api-key",
-  authDomain: "demon-node-demo.firebaseapp.com",
-  projectId: "demon-node-demo",
-  storageBucket: "demon-node-demo.appspot.com",
-  messagingSenderId: "123456789",
-  appId: "demo-app-id"
+  apiKey: "AIzaSyD-SFjagJIKFag9ybire32cxtoGkqA-zCw",
+  authDomain: "project-2-78c26.firebaseapp.com",
+  projectId: "project-2-78c26",
+  storageBucket: "project-2-78c26.firebasestorage.app",
+  messagingSenderId: "986493431540",
+  appId: "1:986493431540:web:d8beb75bc460727a6678a1",
+  measurementId: "G-GYDV1HEZRV"
 };
 
 // Initialize Firebase
