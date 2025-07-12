@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { 
   Globe, 
   Server, 
@@ -39,6 +40,7 @@ import VPSPage from './components/VPSPage';
 import VPSOrderForm from './components/VPSOrderForm';
 import DiscordLogin from './components/DiscordLogin';
 import UserProfile from './components/UserProfile';
+import AdminRouter from './components/admin/AdminRouter';
 import { authManager, type AuthState } from './utils/auth';
 import { superDatabase } from './utils/database';
 
@@ -48,6 +50,17 @@ const getSpecialOffers = () => {
 };
 
 function App() {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/admin/*" element={<AdminRouter />} />
+        <Route path="/*" element={<MainApp />} />
+      </Routes>
+    </Router>
+  );
+}
+
+function MainApp() {
   const [currentView, setCurrentView] = useState('home');
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [selectedAddons, setSelectedAddons] = useState({ units: 0, backups: 0 });
@@ -73,20 +86,6 @@ function App() {
     return unsubscribe;
   }, []);
 
-  // Handle browser back/forward buttons
-  useEffect(() => {
-    const handlePopState = () => {
-      const path = window.location.pathname;
-      if (path === '/admin' || path.startsWith('/admin')) {
-        setCurrentView('admin');
-      } else {
-        setCurrentView('home');
-      }
-    };
-
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
-  }, []);
   const domainExtensions = [
     { tld: '.com', price: '₹999' },
     { tld: '.in', price: '₹599' },
