@@ -230,7 +230,6 @@ function App() {
         </button>
       </div>
     </div>
-  );
 
   if (currentView === 'checkout') {
     return <PaymentForm 
