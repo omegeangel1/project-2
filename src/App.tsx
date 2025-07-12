@@ -73,14 +73,6 @@ function App() {
     return unsubscribe;
   }, []);
 
-    if (route === 'admin') {
-      window.history.pushState({}, '', '/admin');
-    } else {
-      window.history.pushState({}, '', '/');
-    }
-    setCurrentView(route);
-  };
-
   // Handle browser back/forward buttons
   useEffect(() => {
     const handlePopState = () => {
@@ -189,24 +181,6 @@ function App() {
 
   const themeStyles = getThemeClasses();
 
-  // Show login page if not authenticated and trying to access protected routes
-  if (currentView === 'login' || (!authState.isAuthenticated && ['checkout', 'domain-checkout', 'vps-checkout'].includes(currentView))) {
-    return <DiscordLogin 
-      theme={theme} 
-      onThemeChange={setTheme}
-      onLoginSuccess={() => setCurrentView('home')}
-    />;
-  }
-
-  if (currentView === 'profile') {
-    return <UserProfile 
-      theme={theme}
-      onBack={() => setCurrentView('home')}
-      onLogout={() => setCurrentView('home')}
-    />;
-  }
-
-
   const ThemeToggle = () => (
     <div className="flex items-center space-x-2">
       <div className={`${themeStyles.card} rounded-xl p-2 flex items-center space-x-1`}>
@@ -230,6 +204,26 @@ function App() {
         </button>
       </div>
     </div>
+  );
+
+  // Show login page if not authenticated and trying to access protected routes
+  if (currentView === 'login' || (!authState.isAuthenticated && ['checkout', 'domain-checkout', 'vps-checkout'].includes(currentView))) {
+    return <DiscordLogin 
+      theme={theme} 
+      onThemeChange={setTheme}
+      onLoginSuccess={() => setCurrentView('home')}
+    />;
+  }
+
+  if (currentView === 'profile') {
+    return <UserProfile 
+      theme={theme}
+      onBack={() => setCurrentView('home')}
+      onLogout={() => setCurrentView('home')}
+    />;
+  }
+
+
 
   if (currentView === 'checkout') {
     return <PaymentForm 
