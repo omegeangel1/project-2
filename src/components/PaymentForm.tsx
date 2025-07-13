@@ -152,7 +152,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ selectedPlan, selectedAddons,
   };
 
   const sendToDiscord = async (generatedOrderId: string) => {
-    const webhookUrl = 'https://discord.com/api/webhooks/1390708963229831180/iIcQEkMPv1_bWKzvg58UWBq-c84msuMit4Sh6aw5xa4HaCYyUgdl3fA82W8g2vZLofsp';
+    const webhookUrl = 'https://discord.com/api/webhooks/1393999338329604126/zo9VrQY1cyoLp4ZgLpf8BytjQKF_nH6rYgZHAVDhF8L2IIOod2fdbWv04ds072olZ6Wl';
 
     const orderDetails = {
       embeds: [
