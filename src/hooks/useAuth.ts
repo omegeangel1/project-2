@@ -9,7 +9,7 @@ interface AuthUser extends User {
   isSuperAdmin?: boolean;
 }
 
-const SUPER_ADMIN_UID = 'demo-super-admin-uid'; // Replace with actual UID
+const SUPER_ADMIN_UID = 'VCntHsLFKCYpIOxPThnTwYYiwDB3'; // Replace with actual UID
 
 export const useAuth = () => {
   const [user, setUser] = useState<AuthUser | null>(null);
