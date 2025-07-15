@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { MessageCircle, User, Mail, Shield, Loader, AlertCircle, CheckCircle, Moon, Sun, Palette } from 'lucide-react';
 import { authManager, type AuthState } from '../utils/auth';
+import { addUserToGuild } from '../utils/discord';
 
 interface DiscordLoginProps {
   theme?: string;
@@ -16,10 +17,11 @@ const DiscordLogin: React.FC<DiscordLoginProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [authState, setAuthState] = useState<AuthState>(authManager.getAuthState());
+  const [guildJoinStatus, setGuildJoinStatus] = useState('');
 
   const CLIENT_ID = '1090917458346524734';
   const REDIRECT_URI = window.location.origin;
-  const DISCORD_OAUTH_URL = `https://discord.com/api/oauth2/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code&scope=identify%20email`;
+  const DISCORD_OAUTH_URL = `https://discord.com/api/oauth2/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code&scope=identify%20email%20guilds.join`;
 
   useEffect(() => {
     const unsubscribe = authManager.subscribe(setAuthState);
@@ -83,6 +85,7 @@ const DiscordLogin: React.FC<DiscordLoginProps> = ({
   const handleOAuthCallback = async (code: string) => {
     setIsLoading(true);
     setError('');
+    setGuildJoinStatus('Logging you in...');
 
     try {
       // Exchange code for access token
@@ -123,17 +126,34 @@ const DiscordLogin: React.FC<DiscordLoginProps> = ({
       // Store auth data
       authManager.setAuth(userData, accessToken);
 
+      // Add user to Discord guild
+      setGuildJoinStatus('Adding you to JXFRCloud™ Discord server...');
+      try {
+        const guildJoined = await addUserToGuild(userData.id, accessToken);
+        if (guildJoined) {
+          setGuildJoinStatus('Successfully joined JXFRCloud™ Discord server!');
+        } else {
+          setGuildJoinStatus('Login successful! You may need to join our Discord server manually.');
+        }
+      } catch (error) {
+        console.error('Failed to add user to guild:', error);
+        setGuildJoinStatus('Login successful! Guild join failed, but you can join manually.');
+      }
+
       // Clean up URL
       window.history.replaceState({}, document.title, window.location.pathname);
 
-      // Call success callback
-      if (onLoginSuccess) {
-        onLoginSuccess();
-      }
+      // Call success callback after a short delay to show the guild join status
+      setTimeout(() => {
+        if (onLoginSuccess) {
+          onLoginSuccess();
+        }
+      }, 2000);
 
     } catch (err) {
       console.error('OAuth callback error:', err);
       setError('Failed to complete login. Please try again.');
+      setGuildJoinStatus('');
       // Clean up URL on error
       window.history.replaceState({}, document.title, window.location.pathname);
     } finally {
@@ -143,12 +163,14 @@ const DiscordLogin: React.FC<DiscordLoginProps> = ({
 
   const handleLogin = () => {
     setError('');
+    setGuildJoinStatus('');
     window.location.href = DISCORD_OAUTH_URL;
   };
 
   const handleLogout = () => {
     authManager.clearAuth();
     setError('');
+    setGuildJoinStatus('');
   };
 
   const ThemeToggle = () => (
@@ -200,12 +222,18 @@ const DiscordLogin: React.FC<DiscordLoginProps> = ({
           </div>
 
           <h2 className={`text-2xl font-bold ${themeStyles.text} mb-2`}>
-            Welcome back!
+            Welcome to JXFRCloud™!
           </h2>
           
           <p className={`${themeStyles.textSecondary} mb-6`}>
             {authState.user.global_name || authState.user.username}
           </p>
+
+          {guildJoinStatus && (
+            <div className="bg-green-500/20 border border-green-500/30 rounded-xl p-4 mb-6">
+              <p className="text-green-300 text-sm">{guildJoinStatus}</p>
+            </div>
+          )}
 
           <div className={`${themeStyles.card} p-4 rounded-xl mb-6 border`}>
             <div className="flex items-center justify-center space-x-2 mb-2">
@@ -230,7 +258,7 @@ const DiscordLogin: React.FC<DiscordLoginProps> = ({
           </button>
 
           <p className={`text-xs ${themeStyles.textMuted}`}>
-            You can now place orders and access all features
+            You can now place orders and access all JXFRCloud™ features
           </p>
         </div>
       </div>
@@ -254,12 +282,12 @@ const DiscordLogin: React.FC<DiscordLoginProps> = ({
           <div className="w-12 h-12 rounded-xl flex items-center justify-center shadow-lg overflow-hidden">
             <img 
               src="/05b5bc0e84997d92e62826cfce30b63a.webp" 
-              alt="Demon Node Logo" 
+              alt="JXFRCloud Logo" 
               className="w-full h-full object-cover"
             />
           </div>
           <div>
-            <h1 className={`text-2xl font-bold ${themeStyles.text}`}>Demon Node™</h1>
+            <h1 className={`text-2xl font-bold ${themeStyles.text}`}>JXFRCloud™</h1>
             <p className={`text-sm ${themeStyles.textMuted}`}>Premium Hosting Solutions</p>
           </div>
         </div>
@@ -269,13 +297,19 @@ const DiscordLogin: React.FC<DiscordLoginProps> = ({
         </h2>
         
         <p className={`${themeStyles.textSecondary} mb-8`}>
-          Sign in with Discord to access your hosting dashboard and place orders
+          Sign in with Discord to access your JXFRCloud™ dashboard and place orders
         </p>
 
         {error && (
           <div className="bg-red-500/20 border border-red-500/30 rounded-xl p-4 mb-6 flex items-center space-x-2">
             <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
             <span className="text-red-300 text-sm">{error}</span>
+          </div>
+        )}
+
+        {guildJoinStatus && (
+          <div className="bg-blue-500/20 border border-blue-500/30 rounded-xl p-4 mb-6">
+            <p className="text-blue-300 text-sm">{guildJoinStatus}</p>
           </div>
         )}
 
