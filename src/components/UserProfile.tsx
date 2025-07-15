@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, User, Mail, MessageCircle, Calendar, Shield, Crown, Star, Settings, LogOut, Copy, CheckCircle } from 'lucide-react';
+import { ArrowLeft, User, Mail, MessageCircle, Calendar, Shield, Crown, Star, Settings, LogOut, Copy, CheckCircle, Package, Clock, ExternalLink } from 'lucide-react';
 import { authManager, type AuthState } from '../utils/auth';
 import { superDatabase } from '../utils/database';
 
@@ -13,15 +13,21 @@ const UserProfile: React.FC<UserProfileProps> = ({ theme = 'dark', onBack, onLog
   const [authState, setAuthState] = useState<AuthState>(authManager.getAuthState());
   const [copied, setCopied] = useState(false);
   const [userPurchases, setUserPurchases] = useState<any[]>([]);
+  const [userOrders, setUserOrders] = useState<any[]>([]);
 
   useEffect(() => {
     const unsubscribe = authManager.subscribe(setAuthState);
     
-    // Load user purchases
+    // Load user purchases and orders
     if (authState.isAuthenticated && authState.user) {
       const user = superDatabase.getUserByDiscordId(authState.user.id);
       if (user) {
         setUserPurchases(user.purchases);
+        
+        // Get all orders for this user
+        const allOrders = superDatabase.getAllOrders();
+        const userOrdersList = allOrders.filter(order => order.userId === user.id);
+        setUserOrders(userOrdersList);
       }
     }
     
@@ -75,6 +81,30 @@ const UserProfile: React.FC<UserProfileProps> = ({ theme = 'dark', onBack, onLog
     authManager.clearAuth();
     if (onLogout) {
       onLogout();
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'confirmed':
+        return 'bg-green-100 text-green-800';
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'cancelled':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'confirmed':
+        return <CheckCircle className="w-3 h-3 mr-1" />;
+      case 'pending':
+        return <Clock className="w-3 h-3 mr-1" />;
+      default:
+        return <Package className="w-3 h-3 mr-1" />;
     }
   };
 
@@ -269,53 +299,87 @@ const UserProfile: React.FC<UserProfileProps> = ({ theme = 'dark', onBack, onLog
               </div>
             </div>
 
-            {/* Purchase Status */}
+            {/* Order Status */}
             <div className={`${themeStyles.card} rounded-2xl p-6 border`}>
               <h3 className={`text-xl font-bold ${themeStyles.text} mb-6 flex items-center`}>
-                <Star className="w-5 h-5 mr-2" />
-                Purchase History
+                <Package className="w-5 h-5 mr-2" />
+                Order Status & History
               </h3>
 
-              {userPurchases.length > 0 ? (
+              {userOrders.length > 0 ? (
                 <div className="space-y-4">
-                  <div className={`${themeStyles.card} p-4 rounded-xl border text-center`}>
-                    <CheckCircle className="w-8 h-8 text-green-400 mx-auto mb-2" />
-                    <h4 className={`font-semibold ${themeStyles.text} mb-1`}>You bought a server!</h4>
-                    <p className={`text-xs ${themeStyles.textMuted}`}>{userPurchases.length} active purchase(s)</p>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div className={`${themeStyles.card} p-4 rounded-xl border text-center`}>
+                      <div className="text-2xl font-bold text-blue-400 mb-1">{userOrders.length}</div>
+                      <div className={`text-sm ${themeStyles.textMuted}`}>Total Orders</div>
+                    </div>
+                    <div className={`${themeStyles.card} p-4 rounded-xl border text-center`}>
+                      <div className="text-2xl font-bold text-green-400 mb-1">
+                        {userOrders.filter(order => order.status === 'confirmed').length}
+                      </div>
+                      <div className={`text-sm ${themeStyles.textMuted}`}>Confirmed</div>
+                    </div>
+                    <div className={`${themeStyles.card} p-4 rounded-xl border text-center`}>
+                      <div className="text-2xl font-bold text-yellow-400 mb-1">
+                        {userOrders.filter(order => order.status === 'pending').length}
+                      </div>
+                      <div className={`text-sm ${themeStyles.textMuted}`}>Pending</div>
+                    </div>
                   </div>
                   
-                  {userPurchases.map((purchase, index) => (
-                    <div key={index} className={`${themeStyles.card} p-4 rounded-xl border`}>
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <h5 className={`font-semibold ${themeStyles.text} capitalize`}>
-                            {purchase.type} - {purchase.planName}
-                          </h5>
-                          <p className={`text-sm ${themeStyles.textSecondary}`}>{purchase.price}</p>
-                          <p className={`text-xs ${themeStyles.textMuted}`}>
-                            Purchased: {new Date(purchase.purchaseDate).toLocaleDateString()}
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                            purchase.status === 'confirmed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-                          }`}>
-                            {purchase.status}
-                          </span>
-                          <p className={`text-xs ${themeStyles.textMuted} mt-1`}>
-                            Renews: {new Date(purchase.renewalDate).toLocaleDateString()}
-                          </p>
+                  <div className="space-y-3">
+                    {userOrders.slice(0, 5).map((order, index) => (
+                      <div key={index} className={`${themeStyles.card} p-4 rounded-xl border`}>
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-2 mb-2">
+                              <h5 className={`font-semibold ${themeStyles.text} capitalize`}>
+                                {order.type} - {order.planName}
+                              </h5>
+                              <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
+                                {getStatusIcon(order.status)}
+                                {order.status}
+                              </span>
+                            </div>
+                            <p className={`text-sm ${themeStyles.textSecondary} mb-1`}>{order.price}</p>
+                            <p className={`text-xs ${themeStyles.textMuted}`}>
+                              Order ID: #{order.orderId}
+                            </p>
+                            <p className={`text-xs ${themeStyles.textMuted}`}>
+                              Ordered: {new Date(order.createdAt).toLocaleDateString()}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            {order.status === 'pending' && (
+                              <div className={`text-xs ${themeStyles.textMuted} mb-2`}>
+                                <Clock className="w-3 h-3 inline mr-1" />
+                                Awaiting confirmation
+                              </div>
+                            )}
+                            {order.status === 'confirmed' && (
+                              <div className={`text-xs text-green-400 mb-2`}>
+                                <CheckCircle className="w-3 h-3 inline mr-1" />
+                                Active
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                    
+                    {userOrders.length > 5 && (
+                      <div className={`text-center ${themeStyles.textMuted} text-sm`}>
+                        And {userOrders.length - 5} more orders...
+                      </div>
+                    )}
+                  </div>
                 </div>
               ) : (
                 <div className={`${themeStyles.card} p-6 rounded-xl border text-center`}>
-                  <Star className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <h4 className={`font-semibold ${themeStyles.text} mb-2`}>No Purchases Yet</h4>
+                  <Package className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <h4 className={`font-semibold ${themeStyles.text} mb-2`}>No Orders Yet</h4>
                   <p className={`text-sm ${themeStyles.textMuted}`}>
-                    You haven't purchased any servers yet. Browse our plans to get started!
+                    You haven't placed any orders yet. Browse our plans to get started!
                   </p>
                 </div>
               )}
@@ -329,15 +393,21 @@ const UserProfile: React.FC<UserProfileProps> = ({ theme = 'dark', onBack, onLog
               </h3>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <button className={`${themeStyles.button} text-white p-4 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg text-left`}>
+                <a
+                  href="https://discord.gg/Qy6tuNJmwJ"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`${themeStyles.button} text-white p-4 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg text-left block`}
+                >
                   <div className="flex items-center space-x-3">
                     <MessageCircle className="w-5 h-5" />
                     <div>
                       <div className="font-semibold">Join Discord</div>
                       <div className="text-xs opacity-80">Get support & updates</div>
                     </div>
+                    <ExternalLink className="w-4 h-4 ml-auto" />
                   </div>
-                </button>
+                </a>
 
                 <button className={`${themeStyles.button} text-white p-4 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg text-left`}>
                   <div className="flex items-center space-x-3">
