@@ -60,7 +60,7 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ theme = 'dark' }) => {
             <Shield className="w-8 h-8 text-white" />
           </div>
           <h1 className={`text-3xl font-bold ${themeStyles.text} mb-2`}>Admin Dashboard</h1>
-          <p className={`${themeStyles.textSecondary}`}>Sign in to access admin panel</p>
+          <p className={`${themeStyles.textSecondary}`}>JXFRCloud™ Admin Panel</p>
         </div>
 
         {error && (
