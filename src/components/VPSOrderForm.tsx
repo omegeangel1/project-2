@@ -174,7 +174,7 @@ const VPSOrderForm: React.FC<VPSOrderFormProps> = ({ selectedPlan, onBack, theme
           ],
           timestamp: new Date().toISOString(),
           footer: {
-            text: "Demon Node™ VPS Hosting"
+            text: "JXFRCloud™ VPS Hosting"
           }
         }
       ]
