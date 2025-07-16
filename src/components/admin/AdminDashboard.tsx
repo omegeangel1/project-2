@@ -214,7 +214,7 @@ const AdminDashboard: React.FC = () => {
             </div>
             <div>
               <h1 className={`text-xl font-bold ${themeStyles.text}`}>Admin Panel</h1>
-              <p className={`text-xs ${themeStyles.textMuted}`}>Demon Node™</p>
+              <p className={`text-xs ${themeStyles.textMuted}`}>JXFRCloud™</p>
             </div>
           </div>
 
