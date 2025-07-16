@@ -17,12 +17,11 @@ import {
   Calendar
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
-import { collection, query, onSnapshot, orderBy, limit, doc, updateDoc, where, getDocs } from 'firebase/firestore';
-import { db } from '../../config/firebase';
 import { format } from 'date-fns';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import OrderSearch from './OrderSearch';
 import UserManagement from './UserManagement';
+import { superDatabase } from '../../utils/database';
 
 interface DashboardStats {
   totalUsers: number;
@@ -30,18 +29,6 @@ interface DashboardStats {
   pendingOrders: number;
   confirmedOrders: number;
   totalRevenue: number;
-}
-
-interface Order {
-  id: string;
-  username: string;
-  planName: string;
-  status: 'pending' | 'confirmed';
-  amount: number;
-  createdAt: any;
-  email: string;
-  discordTag: string;
-  addons?: any;
 }
 
 const AdminDashboard: React.FC = () => {
@@ -55,7 +42,7 @@ const AdminDashboard: React.FC = () => {
     confirmedOrders: 0,
     totalRevenue: 0
   });
-  const [recentOrders, setRecentOrders] = useState<Order[]>([]);
+  const [recentOrders, setRecentOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   const getThemeClasses = () => {
@@ -85,80 +72,99 @@ const AdminDashboard: React.FC = () => {
 
   const themeStyles = getThemeClasses();
 
-  useEffect(() => {
-    // Real-time stats listeners
-    const unsubscribeUsers = onSnapshot(collection(db, 'users'), (snapshot) => {
-      setStats(prev => ({ ...prev, totalUsers: snapshot.size }));
-    });
-
-    const unsubscribeOrders = onSnapshot(collection(db, 'orders'), (snapshot) => {
-      const orders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Order[];
+  const loadDashboardData = () => {
+    try {
+      // Get analytics from superDatabase
+      const analytics = superDatabase.getAnalytics();
       
-      const pending = orders.filter(order => order.status === 'pending').length;
-      const confirmed = orders.filter(order => order.status === 'confirmed').length;
-      const revenue = orders
-        .filter(order => order.status === 'confirmed')
-        .reduce((sum, order) => sum + (order.amount || 0), 0);
+      // Get all orders
+      const allOrders = superDatabase.getAllOrders();
+      
+      // Calculate revenue from confirmed orders
+      const confirmedOrders = allOrders.filter(order => order.status === 'confirmed');
+      const totalRevenue = confirmedOrders.reduce((sum, order) => {
+        const price = parseInt(order.price.replace(/[₹,]/g, '').split('/')[0]) || 0;
+        return sum + price;
+      }, 0);
 
-      setStats(prev => ({
-        ...prev,
-        totalOrders: orders.length,
-        pendingOrders: pending,
-        confirmedOrders: confirmed,
-        totalRevenue: revenue
-      }));
-    });
+      setStats({
+        totalUsers: analytics.totalUsers,
+        totalOrders: analytics.totalOrders,
+        pendingOrders: analytics.pendingOrders,
+        confirmedOrders: analytics.confirmedOrders,
+        totalRevenue: totalRevenue
+      });
 
-    // Recent orders listener
-    const unsubscribeRecentOrders = onSnapshot(
-      query(collection(db, 'orders'), orderBy('createdAt', 'desc'), limit(5)),
-      (snapshot) => {
-        const orders = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        })) as Order[];
-        setRecentOrders(orders);
-        setLoading(false);
-      }
-    );
+      // Get recent orders (last 10)
+      const sortedOrders = allOrders
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        .slice(0, 10);
+      
+      setRecentOrders(sortedOrders);
+      setLoading(false);
+    } catch (error) {
+      console.error('Error loading dashboard data:', error);
+      setLoading(false);
+    }
+  };
 
-    return () => {
-      unsubscribeUsers();
-      unsubscribeOrders();
-      unsubscribeRecentOrders();
-    };
+  useEffect(() => {
+    loadDashboardData();
+    
+    // Refresh data every 5 seconds to show real-time updates
+    const interval = setInterval(loadDashboardData, 5000);
+    
+    return () => clearInterval(interval);
   }, []);
 
-  const confirmOrder = async (orderId: string) => {
+  const confirmOrder = (orderId: string) => {
     try {
-      await updateDoc(doc(db, 'orders', orderId), {
-        status: 'confirmed',
-        confirmedAt: new Date()
-      });
+      const success = superDatabase.confirmOrder(orderId);
+      if (success) {
+        // Reload data to reflect changes
+        loadDashboardData();
+      }
     } catch (error) {
       console.error('Error confirming order:', error);
     }
   };
 
-  const exportData = async (type: 'orders' | 'users') => {
+  const exportData = (type: 'orders' | 'users') => {
     try {
-      const snapshot = await getDocs(collection(db, type));
-      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      let data: any[] = [];
+      let filename = '';
       
-      const csv = [
-        Object.keys(data[0] || {}).join(','),
-        ...data.map(item => Object.values(item).join(','))
+      if (type === 'orders') {
+        data = superDatabase.getAllOrders();
+        filename = `orders-export-${format(new Date(), 'yyyy-MM-dd')}.csv`;
+      } else {
+        data = superDatabase.getAllUsers();
+        filename = `users-export-${format(new Date(), 'yyyy-MM-dd')}.csv`;
+      }
+      
+      if (data.length === 0) {
+        alert('No data to export');
+        return;
+      }
+      
+      const headers = Object.keys(data[0]).join(',');
+      const csvContent = [
+        headers,
+        ...data.map(item => Object.values(item).map(val => 
+          typeof val === 'string' && val.includes(',') ? `"${val}"` : val
+        ).join(','))
       ].join('\n');
       
-      const blob = new Blob([csv], { type: 'text/csv' });
+      const blob = new Blob([csvContent], { type: 'text/csv' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `${type}-export-${format(new Date(), 'yyyy-MM-dd')}.csv`;
+      a.download = filename;
       a.click();
       URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Error exporting data:', error);
+      alert('Error exporting data');
     }
   };
 
@@ -167,14 +173,18 @@ const AdminDashboard: React.FC = () => {
     { name: 'Confirmed', value: stats.confirmedOrders, color: '#10b981' }
   ];
 
-  const revenueData = [
-    { month: 'Jan', revenue: 12000 },
-    { month: 'Feb', revenue: 19000 },
-    { month: 'Mar', revenue: 15000 },
-    { month: 'Apr', revenue: 25000 },
-    { month: 'May', revenue: 22000 },
-    { month: 'Jun', revenue: 30000 }
-  ];
+  // Generate sample revenue data based on current stats
+  const generateRevenueData = () => {
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+    const baseRevenue = Math.floor(stats.totalRevenue / 6);
+    
+    return months.map((month, index) => ({
+      month,
+      revenue: baseRevenue + (Math.random() * baseRevenue * 0.5)
+    }));
+  };
+
+  const revenueData = generateRevenueData();
 
   const sidebarItems = [
     { id: 'dashboard', label: 'Dashboard', icon: TrendingUp },
@@ -214,7 +224,7 @@ const AdminDashboard: React.FC = () => {
             </div>
             <div>
               <h1 className={`text-xl font-bold ${themeStyles.text}`}>Admin Panel</h1>
-              <p className={`text-xs ${themeStyles.textMuted}`}>JXFRCloud™</p>
+              <p className={`text-xs ${themeStyles.textMuted}`}>Demon Node™</p>
             </div>
           </div>
 
@@ -287,6 +297,17 @@ const AdminDashboard: React.FC = () => {
               <p className={`${themeStyles.textSecondary}`}>
                 Welcome back, {user?.email}. Here's what's happening with your platform.
               </p>
+              <div className="mt-2 flex items-center space-x-4">
+                <button
+                  onClick={loadDashboardData}
+                  className={`${themeStyles.button} text-white px-4 py-2 rounded-lg font-semibold transition-all duration-300 text-sm`}
+                >
+                  Refresh Data
+                </button>
+                <span className={`text-xs ${themeStyles.textMuted}`}>
+                  Last updated: {format(new Date(), 'HH:mm:ss')}
+                </span>
+              </div>
             </div>
 
             {/* Stats Cards */}
@@ -361,7 +382,7 @@ const AdminDashboard: React.FC = () => {
               </div>
 
               <div className={`${themeStyles.card} p-6 rounded-2xl border`}>
-                <h3 className={`text-xl font-bold ${themeStyles.text} mb-6`}>Revenue Growth</h3>
+                <h3 className={`text-xl font-bold ${themeStyles.text} mb-6`}>Revenue Overview</h3>
                 <ResponsiveContainer width="100%" height={300}>
                   <BarChart data={revenueData}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
@@ -396,6 +417,7 @@ const AdminDashboard: React.FC = () => {
                       <th className={`text-left p-4 font-semibold ${themeStyles.text}`}>Order ID</th>
                       <th className={`text-left p-4 font-semibold ${themeStyles.text}`}>Customer</th>
                       <th className={`text-left p-4 font-semibold ${themeStyles.text}`}>Plan</th>
+                      <th className={`text-left p-4 font-semibold ${themeStyles.text}`}>Type</th>
                       <th className={`text-left p-4 font-semibold ${themeStyles.text}`}>Status</th>
                       <th className={`text-left p-4 font-semibold ${themeStyles.text}`}>Date</th>
                       <th className={`text-left p-4 font-semibold ${themeStyles.text}`}>Actions</th>
@@ -404,7 +426,7 @@ const AdminDashboard: React.FC = () => {
                   <tbody>
                     {loading ? (
                       <tr>
-                        <td colSpan={6} className="p-8 text-center">
+                        <td colSpan={7} className="p-8 text-center">
                           <div className="flex items-center justify-center space-x-2">
                             <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-500"></div>
                             <span className={themeStyles.textMuted}>Loading orders...</span>
@@ -413,7 +435,7 @@ const AdminDashboard: React.FC = () => {
                       </tr>
                     ) : recentOrders.length === 0 ? (
                       <tr>
-                        <td colSpan={6} className={`p-8 text-center ${themeStyles.textMuted}`}>
+                        <td colSpan={7} className={`p-8 text-center ${themeStyles.textMuted}`}>
                           No orders found
                         </td>
                       </tr>
@@ -421,13 +443,16 @@ const AdminDashboard: React.FC = () => {
                       recentOrders.map((order) => (
                         <tr key={order.id} className="border-b border-white/5 hover:bg-white/5">
                           <td className={`p-4 ${themeStyles.text} font-mono text-sm`}>
-                            #{order.id.slice(-8)}
+                            #{order.orderId || order.id.slice(-8)}
                           </td>
                           <td className={`p-4 ${themeStyles.textSecondary}`}>
-                            {order.username || order.email}
+                            {order.customerInfo?.firstName} {order.customerInfo?.lastName}
                           </td>
                           <td className={`p-4 ${themeStyles.textSecondary}`}>
                             {order.planName}
+                          </td>
+                          <td className={`p-4 ${themeStyles.textSecondary} capitalize`}>
+                            {order.type}
                           </td>
                           <td className="p-4">
                             <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
@@ -444,12 +469,12 @@ const AdminDashboard: React.FC = () => {
                             </span>
                           </td>
                           <td className={`p-4 ${themeStyles.textSecondary} text-sm`}>
-                            {order.createdAt ? format(order.createdAt.toDate(), 'MMM dd, yyyy') : 'N/A'}
+                            {format(new Date(order.createdAt), 'MMM dd, yyyy')}
                           </td>
                           <td className="p-4">
                             {order.status === 'pending' && (
                               <button
-                                onClick={() => confirmOrder(order.id)}
+                                onClick={() => confirmOrder(order.orderId || order.id)}
                                 className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-lg text-sm font-semibold transition-colors"
                               >
                                 Confirm
