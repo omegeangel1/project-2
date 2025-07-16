@@ -160,7 +160,7 @@ const DomainOrderForm: React.FC<DomainOrderFormProps> = ({ selectedDomain, onBac
           ],
           timestamp: new Date().toISOString(),
           footer: {
-            text: "Demon Node™ Domain Registration"
+            text: "JXFRCloud™ Domain Registration"
           }
         }
       ]
