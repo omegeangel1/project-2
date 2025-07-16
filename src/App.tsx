@@ -690,7 +690,7 @@ function MainApp() {
                 ))}
               </div>
               <p className={`${themeStyles.textSecondary} mb-4 sm:mb-6 text-base sm:text-lg leading-relaxed`}>
-                "Demon Node™ has been amazing! My server runs smoothly with zero downtime. Best hosting service I've used."
+                "JXFRCloud™ has been amazing! My server runs smoothly with zero downtime. Best hosting service I've used."
               </p>
               <div className="flex items-center">
                 <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mr-3 sm:mr-4">
@@ -752,7 +752,7 @@ function MainApp() {
           <div className={`${themeStyles.card} p-8 sm:p-12 rounded-3xl border hover:border-purple-500/30 transition-all duration-300`}>
             <h2 className={`text-3xl sm:text-4xl md:text-5xl font-bold ${themeStyles.text} mb-4 sm:mb-6`}>Ready to Get Started?</h2>
             <p className={`text-lg sm:text-xl ${themeStyles.textSecondary} mb-8 sm:mb-10 leading-relaxed`}>
-              Join thousands of satisfied customers who trust Demon Node™ for their digital needs.
+              Join thousands of satisfied customers who trust JXFRCloud™ for their digital needs.
             </p>
             {/* Special Offers Banner */}
             {specialOffers.length > 0 && (
