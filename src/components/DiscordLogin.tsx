@@ -19,7 +19,7 @@ const DiscordLogin: React.FC<DiscordLoginProps> = ({
   const [serverJoinStatus, setServerJoinStatus] = useState<'pending' | 'success' | 'failed'>('pending');
 
   const CLIENT_ID = '1090917458346524734';
-  const REDIRECT_URI = window.location.origin;
+  const REDIRECT_URI = `${window.location.origin}/callback`;
   const DISCORD_OAUTH_URL = `https://discord.com/api/oauth2/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code&scope=identify%20email%20guilds.join`;
   const GUILD_ID = '1388084142075547680';
 
