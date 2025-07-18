@@ -43,7 +43,7 @@ import UserProfile from './components/UserProfile';
 import AdminRouter from './components/admin/AdminRouter';
 import { authManager, type AuthState } from './utils/auth';
 import { superDatabase } from './utils/database';
-import Callback from './components/Callback';
+import Callback from './components/callback';
 
 // Get special offers for display
 const getSpecialOffers = () => {
