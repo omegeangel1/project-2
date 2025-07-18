@@ -1,57 +1,68 @@
-// api/discord-auth.js
-import axios from 'axios';
-
 export default async function handler(req, res) {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET,POST");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  const code = req.query.code;
 
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+  if (!code) {
+    return res.status(400).json({ success: false, error: "Missing code" });
   }
 
-  const code = req.body.code;
-
   try {
-    // Exchange code for access_token
-    const tokenRes = await axios.post(
-      'https://discord.com/api/oauth2/token',
-      new URLSearchParams({
-        client_id: process.env.DISCORD_CLIENT_ID,
-        client_secret: process.env.DISCORD_CLIENT_SECRET,
-        grant_type: 'authorization_code',
-        code: code,
-        redirect_uri: 'https://www.jxfrcloud.xyz/callback',
-      }),
-      {
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      }
-    );
+    const params = new URLSearchParams();
+    params.append("client_id", process.env.DISCORD_CLIENT_ID);
+    params.append("client_secret", process.env.DISCORD_CLIENT_SECRET);
+    params.append("grant_type", "authorization_code");
+    params.append("code", code);
+    params.append("redirect_uri", process.env.DISCORD_REDIRECT_URI); // Must match Discord portal
 
-    const { access_token } = tokenRes.data;
-
-    // Get user info
-    const userRes = await axios.get('https://discord.com/api/users/@me', {
-      headers: { Authorization: `Bearer ${access_token}` },
+    // Step 1: Get access token
+    const tokenResponse = await fetch("https://discord.com/api/oauth2/token", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: params,
     });
 
-    const userId = userRes.data.id;
+    const tokenData = await tokenResponse.json();
 
-    // Add user to guild
-    await axios.put(
-      `https://discord.com/api/guilds/YOUR_GUILD_ID/members/${userId}`,
-      { access_token },
-      {
-        headers: {
-          Authorization: `Bot ${process.env.DISCORD_BOT_TOKEN}`,
-          'Content-Type': 'application/json',
-        },
-      }
-    );
+    if (!tokenData.access_token) {
+      return res.status(500).json({ success: false, error: "Token exchange failed", tokenData });
+    }
 
-    return res.status(200).json({ success: true, user: userRes.data });
+    const accessToken = tokenData.access_token;
+
+    // Step 2: Get user info
+    const userResponse = await fetch("https://discord.com/api/users/@me", {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
+    const userData = await userResponse.json();
+
+    // Step 3: Add user to your server
+    const guildId = process.env.DISCORD_GUILD_ID; // Your server ID
+    const botToken = process.env.DISCORD_BOT_TOKEN; // Must be bot in your server with Manage Server
+
+    const joinResponse = await fetch(`https://discord.com/api/guilds/${guildId}/members/${userData.id}`, {
+      method: "PUT",
+      headers: {
+        Authorization: `Bot ${botToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        access_token: accessToken,
+      }),
+    });
+
+    if (!joinResponse.ok) {
+      const errorText = await joinResponse.text();
+      return res.status(500).json({ success: false, error: "Failed to add user to guild", errorText });
+    }
+
+    res.status(200).json({ success: true, message: "User added to server", user: userData });
+
   } catch (error) {
-    console.error('OAuth error:', error.response?.data || error.message);
-    return res.status(500).json({ error: 'OAuth failed' });
+    console.error(error);
+    res.status(500).json({ success: false, error: "Unexpected error", details: error.message });
   }
 }
