@@ -1,48 +1,57 @@
-// /api/discord-auth.js
+// api/discord-auth.js
+import axios from 'axios';
+
 export default async function handler(req, res) {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET,POST");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+
   if (req.method !== 'POST') {
-    return res.status(405).json({ success: false, error: "Method not allowed" });
+    return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { code } = req.body;
-
-  if (!code) {
-    return res.status(400).json({ success: false, error: "Missing code from request" });
-  }
+  const code = req.body.code;
 
   try {
-    const params = new URLSearchParams();
-    params.append("client_id", process.env.DISCORD_CLIENT_ID);
-    params.append("client_secret", process.env.DISCORD_CLIENT_SECRET);
-    params.append("grant_type", "authorization_code");
-    params.append("code", code);
-    params.append("redirect_uri", "https://www.jxfrcloud.xyz/callback");
-    params.append("scope", "identify email guilds.join");
+    // Exchange code for access_token
+    const tokenRes = await axios.post(
+      'https://discord.com/api/oauth2/token',
+      new URLSearchParams({
+        client_id: process.env.DISCORD_CLIENT_ID,
+        client_secret: process.env.DISCORD_CLIENT_SECRET,
+        grant_type: 'authorization_code',
+        code: code,
+        redirect_uri: 'https://www.jxfrcloud.xyz/callback',
+      }),
+      {
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      }
+    );
 
-    const tokenRes = await fetch("https://discord.com/api/oauth2/token", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: params.toString(),
+    const { access_token } = tokenRes.data;
+
+    // Get user info
+    const userRes = await axios.get('https://discord.com/api/users/@me', {
+      headers: { Authorization: `Bearer ${access_token}` },
     });
 
-    const tokenData = await tokenRes.json();
+    const userId = userRes.data.id;
 
-    if (tokenData.error) {
-      return res.status(401).json({ success: false, error: "Invalid token exchange", details: tokenData });
-    }
+    // Add user to guild
+    await axios.put(
+      `https://discord.com/api/guilds/YOUR_GUILD_ID/members/${userId}`,
+      { access_token },
+      {
+        headers: {
+          Authorization: `Bot ${process.env.DISCORD_BOT_TOKEN}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
 
-    const userRes = await fetch("https://discord.com/api/users/@me", {
-      headers: {
-        Authorization: `${tokenData.token_type} ${tokenData.access_token}`,
-      },
-    });
-
-    const userData = await userRes.json();
-
-    res.status(200).json({ success: true, user: userData });
-  } catch (err) {
-    res.status(500).json({ success: false, error: "Server error", details: err.message });
+    return res.status(200).json({ success: true, user: userRes.data });
+  } catch (error) {
+    console.error('OAuth error:', error.response?.data || error.message);
+    return res.status(500).json({ error: 'OAuth failed' });
   }
 }
