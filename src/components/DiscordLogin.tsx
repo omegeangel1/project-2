@@ -19,7 +19,7 @@ const DiscordLogin: React.FC<DiscordLoginProps> = ({
   const [serverJoinStatus, setServerJoinStatus] = useState<'pending' | 'success' | 'failed'>('pending');
 
   const CLIENT_ID = '1090917458346524734';
-  const REDIRECT_URI = `${window.location.origin}/callback`;
+  const REDIRECT_URI = window.location.origin;
   const DISCORD_OAUTH_URL = `https://discord.com/api/oauth2/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code&scope=identify%20email%20guilds.join`;
   const GUILD_ID = '1388084142075547680';
 
@@ -87,27 +87,48 @@ const DiscordLogin: React.FC<DiscordLoginProps> = ({
     setServerJoinStatus('pending');
 
     try {
-      // Send code to backend for processing
-      const response = await fetch('/api/discord-auth', {
+      // Call your Vercel API endpoint
+      const response = await fetch('/api/discord-callback', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code, guildId: GUILD_ID })
+        body: JSON.stringify({ code })
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Authentication failed');
+        console.error('API error:', errorData);
+        throw new Error(errorData.details || errorData.error || 'Authentication failed');
       }
 
-      const { user, accessToken, joinedServer } = await response.json();
-      
-      // Update server join status
-      setServerJoinStatus(joinedServer ? 'success' : 'failed');
-      
-      // Store auth data
-      authManager.setAuth(user, accessToken);
+      const data = await response.json();
+      const { user, accessToken, serverJoin } = data;
 
-      // Clean up URL
+      // Handle server join status
+      if (serverJoin.success) {
+        setServerJoinStatus('success');
+        console.log(`✅ ${serverJoin.message}`);
+      } else {
+        setServerJoinStatus('failed');
+        console.warn(`⚠️ ${serverJoin.message}`);
+      }
+
+      // Store auth data and create/update user in database
+      authManager.setAuth(user, accessToken);
+      
+      // Add user to SuperDatabase
+      try {
+        const existingUser = superDatabase.getUserByDiscordId(user.id);
+        if (!existingUser) {
+          superDatabase.createUser(user);
+          console.log(`✅ Created new user in database: ${user.username}`);
+        } else {
+          console.log(`✅ Updated existing user in database: ${user.username}`);
+        }
+      } catch (dbError) {
+        console.error('Database error:', dbError);
+      }
+
+      // Clean up URL and redirect
       window.history.replaceState({}, document.title, window.location.pathname);
 
       if (onLoginSuccess) onLoginSuccess();
@@ -116,6 +137,7 @@ const DiscordLogin: React.FC<DiscordLoginProps> = ({
       console.error('Auth error:', err);
       setError(err.message || 'Login failed. Please try again.');
       window.history.replaceState({}, document.title, window.location.pathname);
+      setServerJoinStatus('failed');
     } finally {
       setIsLoading(false);
     }
@@ -206,17 +228,18 @@ const DiscordLogin: React.FC<DiscordLoginProps> = ({
           {serverJoinStatus === 'success' ? (
             <div className="bg-green-500/20 border border-green-500/30 rounded-xl p-3 mb-4 flex items-center justify-center">
               <CheckCircle className="w-4 h-4 text-green-400 mr-2" />
-              <span className="text-green-300 text-sm">Joined Discord server!</span>
+              <span className="text-green-300 text-sm">✅ Automatically joined Discord server!</span>
             </div>
           ) : serverJoinStatus === 'failed' ? (
             <div className="bg-yellow-500/20 border border-yellow-500/30 rounded-xl p-3 mb-4">
               <div className="flex items-center justify-center mb-1">
                 <AlertCircle className="w-4 h-4 text-yellow-400 mr-2" />
-                <span className="text-yellow-300 text-sm">Couldn't auto-join server</span>
+                <span className="text-yellow-300 text-sm">⚠️ Couldn't auto-join server</span>
               </div>
               <a 
                 href="https://discord.gg/Qy6tuNJmwJ" 
                 target="_blank"
+                rel="noopener noreferrer"
                 className="text-blue-300 hover:text-blue-100 text-sm underline"
               >
                 Join manually: discord.gg/Qy6tuNJmwJ
@@ -300,10 +323,10 @@ const DiscordLogin: React.FC<DiscordLoginProps> = ({
         <div className={`${themeStyles.card} p-4 rounded-xl border mb-4`}>
           <div className="flex items-center justify-center space-x-2 mb-2">
             <MessageCircle className="w-4 h-4 text-[#5865F2]" />
-            <span className={`font-semibold ${themeStyles.text} text-sm`}>Auto-Join Discord Server</span>
+            <span className={`font-semibold ${themeStyles.text} text-sm`}>🤖 Auto-Join Discord Server</span>
           </div>
           <p className={`text-xs ${themeStyles.textMuted} mb-3`}>
-            You'll automatically join our server when you login
+            You'll automatically join our server (Guild: 1388084142075547680) when you login
           </p>
           <a
             href="https://discord.gg/Qy6tuNJmwJ"
@@ -311,7 +334,7 @@ const DiscordLogin: React.FC<DiscordLoginProps> = ({
             rel="noopener noreferrer"
             className="text-[#5865F2] hover:text-[#4752C4] text-sm font-medium transition-colors"
           >
-            Manual Join: discord.gg/Qy6tuNJmwJ
+            Backup Link: discord.gg/Qy6tuNJmwJ
           </a>
         </div>
 
